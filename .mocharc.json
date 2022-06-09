@@ -1,0 +1,5 @@
+{
+    "extension": ["js", "jsx", "ts", "tsx"],
+    "spec": ["tests/**/*.{js,ts,jsx,tsx}"],
+    "node-option": ["no-warnings", "experimental-specifier-resolution=node", "loader=ts-node/esm"]
+}

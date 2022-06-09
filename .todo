@@ -1,0 +1,11 @@
+## todos
+
+-   potentially bring back typegc/overload.js as a feature of this library
+
+-   make linter more like rustc
+
+-   better formatter with formatting options
+
+-   write up the rest of the core functions (use 'find' as example)
+
+-   make sure to write tests for everything

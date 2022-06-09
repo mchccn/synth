@@ -1,0 +1,6 @@
+src/
+docs/
+.github/
+.mocharc.json
+.prettierrc.json
+tsconfig.json

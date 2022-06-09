@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "module": "esnext",
+        "moduleResolution": "node",
+        "declaration": true,
+        "baseUrl": ".",
+        "rootDir": "src/",
+        "outDir": "./dist",
+        "importsNotUsedAsValues": "error",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "exactOptionalPropertyTypes": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+        "noImplicitReturns": true,
+        "skipLibCheck": true
+    },
+    "include": ["src/**/*.ts", "test/**/*.ts"],
+    "exclude": ["node_modules", "dist"]
+}
