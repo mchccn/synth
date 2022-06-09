@@ -2,7 +2,9 @@
     "name": "@kelsny/synth",
     "version": "0.0.1",
     "description": "Synthesize your types into real validators at runtime.",
-    "bin": "dist/bin.js",
+    "bin": {
+        "synth": "dist/bin.js"
+    },
     "main": "dist/index.js",
     "engines": {
         "node": ">=16"

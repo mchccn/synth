@@ -6,5 +6,6 @@ export const boolean = createBaseProvider({
     defaultAndExpectedArgs: { boxed: false },
     executor: ({ boxed }) => new BooleanNode(boxed),
     compile: (args) => `new BooleanNode(${args.boxed})`,
+    types: (args) => `BooleanNode<${args.boxed}>`,
     getLints: () => [],
 });

@@ -1,4 +1,4 @@
-import {  synthesize } from "./synthesize.js";
+import { synthesize } from "./synthesize.js";
 
 // ...
 

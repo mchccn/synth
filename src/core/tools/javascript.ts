@@ -16,7 +16,7 @@ import type { createBaseProvider, createProviderExtension } from "../generators/
 import * as generators from "../generators/index.js";
 
 // ...
-export class Static implements ExprVisitor<string> {
+export class JSGenerator implements ExprVisitor<string> {
     constructor(/* more shit here */) {}
 
     generate(expr: Expr) {
@@ -109,7 +109,7 @@ export class Static implements ExprVisitor<string> {
     }
 
     visitTupleExpr(expr: TupleExpr): string {
-        return `new TupleNode(${expr.elements.map((e) => e.accept(this)).join(", ")})`;
+        return `new TupleNode([${expr.elements.map((e) => e.accept(this)).join(", ")}])`;
     }
 
     visitUnaryExpr(expr: UnaryExpr): string {

@@ -2,4 +2,4 @@
 
 import cli from "./cli/index.js";
 
-if (require.main === module) cli();
+if (import.meta.url.endsWith("bin.js")) cli();

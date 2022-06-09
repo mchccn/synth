@@ -1,0 +1,11 @@
+{
+    type: "PLUS";
+    lhs: {
+        type: "CONSTANT";
+        value: number range(start: 0, end: 100);
+    };
+    rhs: {
+        type: "CONSTANT";
+        value: number;
+    };
+}

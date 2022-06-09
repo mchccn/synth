@@ -167,6 +167,12 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
             }, column ${lint.start.col}${
                 // This lint spans multiple lines
                 lint.end.line - lint.start.line ? ` to line ${lint.end.line}, column ${lint.start.col}` : ""
+            }${
+                process.env.SYNTH_COMPILING_PATH
+                    ? `\n    ${" ".repeat(LintSeverity[lint.severity].length + 1 + 1)}at ${
+                          process.env.SYNTH_COMPILING_PATH
+                      }`
+                    : ""
             }`;
 
             return message;

@@ -1,11 +1,12 @@
 import { Parser } from "../core/base/parser.js";
 import { Scanner } from "../core/base/scanner.js";
+import { JSGenerator } from "../core/tools/javascript.js";
 import { Linter } from "../core/tools/linter.js";
 import { Resolver } from "../core/tools/resolver.js";
-import { Static } from "../core/tools/static.js";
+import { TSGenerator } from "../core/tools/typescript.js";
 
-export function compile(source: string): string;
-export function compile(template: TemplateStringsArray, ...values: unknown[]): string;
+export function compile(source: string): [js: string, ts: string];
+export function compile(template: TemplateStringsArray, ...values: unknown[]): [js: string, ts: string];
 export function compile(template: TemplateStringsArray | string, ...values: unknown[]) {
     const source = Array.isArray(template)
         ? template.reduce((source, part, i) => `${source}${part}${String(values[i] ?? "")}`, "")
@@ -21,7 +22,9 @@ export function compile(template: TemplateStringsArray | string, ...values: unkn
 
     Linter.display(source, lints);
 
-    const node = new Static().generate(resolved);
+    const node = new JSGenerator().generate(resolved);
 
-    return node;
+    const types = new TSGenerator().generate(resolved);
+
+    return [node, types];
 }

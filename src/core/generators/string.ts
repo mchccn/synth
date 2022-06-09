@@ -6,5 +6,6 @@ export const string = createBaseProvider({
     defaultAndExpectedArgs: { boxed: false },
     executor: ({ boxed }) => new StringNode(boxed),
     compile: (args) => `new StringNode(${args.boxed})`,
+    types: (args) => `StringNode<${args.boxed}>`,
     getLints: () => [],
 });

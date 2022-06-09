@@ -1,5 +1,7 @@
 src/
 docs/
+examples/
+out/
 .github/
 .mocharc.json
 .prettierrc.json

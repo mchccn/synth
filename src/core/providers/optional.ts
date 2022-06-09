@@ -1,7 +1,7 @@
-import type { GetModuleType } from "../types.js";
+import type { GetNodeType } from "../types.js";
 import { ValidationNode } from "./node.js";
 
-export class OptionalNode<Target extends ValidationNode> extends ValidationNode<GetModuleType<Target> | undefined> {
+export class OptionalNode<Target extends ValidationNode> extends ValidationNode<GetNodeType<Target> | undefined> {
     constructor(readonly target: Target) {
         super();
     }

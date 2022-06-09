@@ -16,12 +16,14 @@ export function createBaseProvider<T>({
     defaultAndExpectedArgs,
     executor,
     compile,
+    types,
     getLints,
 }: {
     identifier: string;
     defaultAndExpectedArgs: T;
     executor: (args: T) => ValidationNode;
     compile: (args: T) => string;
+    types: (args: T) => string;
     getLints: (expr: CallExpr) => Lint[];
 }) {
     return Object.assign(executor, {
@@ -29,6 +31,7 @@ export function createBaseProvider<T>({
             compile(mergeWithDefaults(args, defaultAndExpectedArgs)).concat(
                 (v ?? []).map((c) => `.constraint(${c})`).join(""),
             ),
+        types: (args: T) => types(mergeWithDefaults(args, defaultAndExpectedArgs)),
         identifier,
         isModifier: false,
         defaultAndExpectedArgs,

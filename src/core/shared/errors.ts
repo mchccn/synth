@@ -29,7 +29,8 @@ ${" ".repeat(Math.log10(token.line) + 3 + token.col)}${chalk.bold(
             token.lexeme.length === 1 ? "^" : "~".repeat(token.lexeme.length),
         )}
 ${this.name}: ${this.message}
-    at line ${token.line}, column ${token.col}\
-`;
+    at line ${token.line}, column ${token.col}${
+            process.env.SYNTH_COMPILING_PATH ? `\n    at ${process.env.SYNTH_COMPILING_PATH}` : ""
+        }`;
     }
 }

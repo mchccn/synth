@@ -6,5 +6,6 @@ export const number = createBaseProvider({
     defaultAndExpectedArgs: { boxed: false },
     executor: ({ boxed }) => new NumberNode(boxed),
     compile: (args) => `new NumberNode(${args.boxed})`,
+    types: (args) => `NumberNode<${args.boxed}>`,
     getLints: () => [],
 });

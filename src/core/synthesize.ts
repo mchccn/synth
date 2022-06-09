@@ -2,23 +2,13 @@ import { Parser } from "./base/parser.js";
 import { Scanner } from "./base/scanner.js";
 import type { ValidationNode } from "./providers/node.js";
 import { Generator } from "./tools/generator.js";
-import { Lint, Linter } from "./tools/linter.js";
+import { Linter } from "./tools/linter.js";
 import { Resolver } from "./tools/resolver.js";
-import { Static } from "./tools/static.js";
-import type { GetModuleType } from "./types.js";
 
-export class Synthesized<Matcher extends ValidationNode = ValidationNode, Type = GetModuleType<Matcher>> {
-    private _: Type = null!;
+export class Synthesized<Matcher extends ValidationNode = ValidationNode> {
+    constructor(private readonly module: Matcher) {}
 
-    constructor(private readonly source: string, private readonly lints: Lint[], private readonly module: Matcher) {}
-
-    lint(config?: Parameters<typeof Linter.display>[2]) {
-        Linter.display(this.source, this.lints, config);
-
-        return this;
-    }
-
-    private check(value: unknown): value is Type {
+    private check(value: unknown) {
         return this.module.check(value);
     }
 }
@@ -28,8 +18,13 @@ export interface SynthesizerValidator {
     check(value: unknown): boolean;
 }
 
-export function synthesize(source: string): Synthesized;
-export function synthesize(template: TemplateStringsArray, ...values: unknown[]): Synthesized;
+export function synthesize(
+    source: string,
+): Synthesized & { lint(config?: Parameters<typeof Linter.display>[2]): Synthesized };
+export function synthesize(
+    template: TemplateStringsArray,
+    ...values: unknown[]
+): Synthesized & { lint(config?: Parameters<typeof Linter.display>[2]): Synthesized };
 export function synthesize(template: TemplateStringsArray | string, ...values: unknown[]) {
     const source = Array.isArray(template)
         ? template.reduce((source, part, i) => `${source}${part}${String(values[i] ?? "")}`, "")
@@ -45,6 +40,13 @@ export function synthesize(template: TemplateStringsArray | string, ...values: u
 
     const node = new Generator().generate(resolved);
 
-    return new Synthesized(source, lints, node);
-}
+    const s = new Synthesized(node);
 
+    return Object.assign(s, {
+        lint(config?: Parameters<typeof Linter.display>[2]) {
+            Linter.display(source, lints, config);
+
+            return s;
+        },
+    });
+}

@@ -2,8 +2,8 @@ import type chalk from "chalk";
 import type { TokenType } from "./base/tokentype.js";
 import type { ValidationNode } from "./providers/node.js";
 
-export type TryModuleType<T> = T extends ValidationNode<infer U> ? U : T;
-export type GetModuleType<T> = T extends ValidationNode<infer U> ? U : never;
+export type TryNodeType<T> = T extends ValidationNode<infer U> ? U : T;
+export type GetNodeType<T> = T extends ValidationNode<infer U> ? U : never;
 
 type NarrowHelper<T> =
     | (T extends [] ? [] : never)
@@ -14,20 +14,24 @@ type Try<A1 extends any, A2 extends any, Catch = never> = A1 extends A2 ? A1 : C
 
 export type Narrow<T> = Try<T, [], NarrowHelper<T>>;
 
-export type GetTupleType<Modules> = { [K in keyof Modules]: TryModuleType<Modules[K]> };
+export type GetTupleType<Modules> = { [K in keyof Modules]: TryNodeType<Modules[K]> };
 
 export type GetObjectType<
     T extends readonly (readonly [string | RegExp, ValidationNode, boolean])[],
     U extends boolean,
 > = {
-    [K in Extract<T[number], readonly [any, any, false]>[0]]: GetModuleType<
+    [K in Extract<T[number], readonly [any, any, false]>[0]]: GetNodeType<
         Extract<T[number], readonly [K, any, any]>[1]
     >;
 } & {
-    [K in Extract<T[number], readonly [any, any, true]>[0]]?: GetModuleType<
+    [K in Extract<T[number], readonly [any, any, true]>[0]]?: GetNodeType<
         Extract<T[number], readonly [K, any, any]>[1]
     >;
-} & (U extends true ? { [key: string]: any } : {}) extends infer O
+} & (U extends true
+        ? { [key: string]: any }
+        : RegExp extends T[number][0]
+        ? { [key: string]: GetNodeType<Extract<T[number], readonly [RegExp, any, any]>[1]> }
+        : {}) extends infer O
     ? { [K in keyof O]: O[K] }
     : never;
 
