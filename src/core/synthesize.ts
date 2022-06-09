@@ -11,8 +11,8 @@ export class Synthesized<Matcher extends ValidationNode = ValidationNode, Type =
 
     constructor(private readonly source: string, private readonly lints: Lint[], private readonly module: Matcher) {}
 
-    lint(config: Parameters<typeof Linter.display>[2]) {
-        Linter.display(this.source, this.lints);
+    lint(config?: Parameters<typeof Linter.display>[2]) {
+        Linter.display(this.source, this.lints, config);
 
         return this;
     }
