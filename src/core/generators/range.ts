@@ -7,9 +7,8 @@ export const range = createProviderExtension({
         end: 0,
         exclusive: false,
     },
-    executor: (node, args) => {
-        return node.constraint(new RangeConstraint(args));
-    },
+    executor: (node, args) => node.constraint(new RangeConstraint(args)),
+    compile: (args) => `new RangeConstraint(${JSON.stringify(args)})`,
     getLints: lintsPipe(requiredArgs(["start", "end"])),
     preferredProviders: ["number"],
 });

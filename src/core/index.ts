@@ -1,4 +1,4 @@
-import { synthesize } from "./synthesize.js";
+import {  synthesize } from "./synthesize.js";
 
 // ...
 
@@ -17,6 +17,8 @@ const source = `\
 `;
 
 const synthed = synthesize(source).lint();
+
+console.log(synthed);
 
 //@ts-ignore
 export * from "../../precompiled.js";

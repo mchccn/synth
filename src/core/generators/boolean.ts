@@ -4,8 +4,7 @@ import { createBaseProvider } from "./generators.js";
 export const boolean = createBaseProvider({
     identifier: "boolean",
     defaultAndExpectedArgs: { boxed: false },
-    executor: ({ boxed }) => {
-        return new BooleanNode(boxed);
-    },
+    executor: ({ boxed }) => new BooleanNode(boxed),
+    compile: (args) => `new BooleanNode(${args.boxed})`,
     getLints: () => [],
 });

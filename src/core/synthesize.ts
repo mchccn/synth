@@ -4,6 +4,7 @@ import type { ValidationNode } from "./providers/node.js";
 import { Generator } from "./tools/generator.js";
 import { Lint, Linter } from "./tools/linter.js";
 import { Resolver } from "./tools/resolver.js";
+import { Static } from "./tools/static.js";
 import type { GetModuleType } from "./types.js";
 
 export class Synthesized<Matcher extends ValidationNode = ValidationNode, Type = GetModuleType<Matcher>> {
@@ -46,3 +47,4 @@ export function synthesize(template: TemplateStringsArray | string, ...values: u
 
     return new Synthesized(source, lints, node);
 }
+

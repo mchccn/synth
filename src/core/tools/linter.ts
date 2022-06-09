@@ -236,19 +236,30 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
                     if (baseProviders.includes(e.identifier.lexeme)) providers.push([e.identifier, e.identifier]);
                 }
 
-                if (e instanceof LiteralExpr || e instanceof TupleExpr || e instanceof ObjectExpr)
+                if (
+                    e instanceof LiteralExpr ||
+                    e instanceof ArrayExpr ||
+                    e instanceof TupleExpr ||
+                    e instanceof ObjectExpr
+                )
                     providers.push(e instanceof LiteralExpr ? [e.token, e.token] : [e.start, e.end]);
             });
 
             if (expr.expr.length > 1) {
                 if (
-                    expr.expr.some((e) => e instanceof LiteralExpr || e instanceof TupleExpr || e instanceof ObjectExpr)
+                    expr.expr.some(
+                        (e) =>
+                            e instanceof LiteralExpr ||
+                            e instanceof ArrayExpr ||
+                            e instanceof TupleExpr ||
+                            e instanceof ObjectExpr,
+                    )
                 )
                     lints.push(
                         new Lint(
                             expr.name ?? expr.start,
                             expr.name ?? expr.end,
-                            `Literals, tuples, and objects cannot be used with other types.`,
+                            `Literals, arrays, tuples, and objects cannot be used with other types.`,
                             LintSeverity.Fatal,
                         ),
                     );

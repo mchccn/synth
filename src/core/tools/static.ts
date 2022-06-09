@@ -1,5 +1,3 @@
-// takes analyzed tree and generates pattern
-
 import {
     ArrayExpr,
     CallExpr,
@@ -16,44 +14,40 @@ import {
 import { TokenType } from "../base/tokentype.js";
 import type { createBaseProvider, createProviderExtension } from "../generators/generators.js";
 import * as generators from "../generators/index.js";
-import { ArrayNode } from "../providers/array.js";
-import { LiteralNode } from "../providers/literal.js";
-import type { ValidationNode } from "../providers/node.js";
-import { ObjectNode } from "../providers/object.js";
-import { OptionalNode } from "../providers/optional.js";
-import { StringNode } from "../providers/string.js";
-import { TupleNode } from "../providers/tuple.js";
 
-export class Generator implements ExprVisitor<ValidationNode> {
+// ...
+export class Static implements ExprVisitor<string> {
     constructor(/* more shit here */) {}
 
     generate(expr: Expr) {
         return expr.accept(this);
     }
 
-    visitArrayExpr(expr: ArrayExpr): ValidationNode {
-        return new ArrayNode(expr.expr.accept(this));
+    visitArrayExpr(expr: ArrayExpr): string {
+        return `new ArrayNode(${expr.accept(this)})`;
     }
 
-    visitCallExpr(expr: CallExpr): ValidationNode {
+    visitCallExpr(expr: CallExpr): string {
         const generator = generators[expr.identifier.lexeme as keyof typeof generators];
 
         if (generator.isModifier)
             throw new Error(`Synthesizer should not have to generate a node for a single call expression.`);
 
-        return generator(
+        return generator.compile(
             Object.fromEntries([...expr.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
         );
     }
 
-    visitLiteralExpr(expr: LiteralExpr): ValidationNode {
+    visitLiteralExpr(expr: LiteralExpr): string {
         if (expr.value instanceof RegExp)
-            return generators.regex(new StringNode(true), { pattern: expr.value.source, flags: "" });
+            return generators.string.compile({ boxed: true }, [
+                generators.regex.compile({ pattern: expr.value.source, flags: "" }),
+            ]);
 
-        return new LiteralNode(expr.value as any);
+        return `new LiteralNode(${typeof expr.value === "undefined" ? "undefined" : JSON.stringify(expr.value)})`;
     }
 
-    visitGroupingExpr(expr: GroupingExpr): ValidationNode {
+    visitGroupingExpr(expr: GroupingExpr): string {
         if (expr.expr.length === 1) {
             const provider = expr.expr[0];
 
@@ -79,38 +73,46 @@ export class Generator implements ExprVisitor<ValidationNode> {
 
         const node = (
             generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<typeof createBaseProvider>
-        )(Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any);
-
-        validators.forEach((v) => {
-            (generators[v.identifier.lexeme as keyof typeof generators] as ReturnType<typeof createProviderExtension>)(
-                node,
-                Object.fromEntries([...v.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
-            );
-        });
+        ).compile(
+            Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
+            validators.map((v) =>
+                (
+                    generators[v.identifier.lexeme as keyof typeof generators] as ReturnType<
+                        typeof createProviderExtension
+                    >
+                ).compile(
+                    Object.fromEntries([...v.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
+                ),
+            ),
+        );
 
         return node;
     }
 
-    visitObjectExpr(expr: ObjectExpr): ValidationNode {
-        return new ObjectNode(
-            expr.props.map((p) => [p.name, p.value.accept(this), p.optional] as const),
-            expr.unstrict,
-        );
+    visitObjectExpr(expr: ObjectExpr): string {
+        return `new ObjectNode([${expr.props
+            .map(
+                (p) =>
+                    `[${p.name instanceof RegExp ? `/${p.name.source}/` : JSON.stringify(p.name)}, ${p.value.accept(
+                        this,
+                    )}, ${p.optional}]`,
+            )
+            .join(", ")}], ${expr.unstrict})`;
     }
 
-    visitOptionalExpr(expr: OptionalExpr): ValidationNode {
-        return new OptionalNode(expr.expr.accept(this));
+    visitOptionalExpr(expr: OptionalExpr): string {
+        return `new OptionalNode(${expr.expr.accept(this)})`;
     }
 
-    visitPropExpr(expr: PropExpr): ValidationNode {
+    visitPropExpr(expr: PropExpr): string {
         return expr.value.accept(this);
     }
 
-    visitTupleExpr(expr: TupleExpr): ValidationNode {
-        return new TupleNode(expr.elements.map((e) => e.accept(this)));
+    visitTupleExpr(expr: TupleExpr): string {
+        return `new TupleNode(${expr.elements.map((e) => e.accept(this)).join(", ")})`;
     }
 
-    visitUnaryExpr(expr: UnaryExpr): ValidationNode {
+    visitUnaryExpr(expr: UnaryExpr): string {
         if (expr.operator.type === TokenType.Minus)
             throw new Error("No negations should be left after the resolution step.");
 

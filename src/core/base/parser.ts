@@ -160,13 +160,17 @@ export class Parser {
     }
 
     private postmod() {
+        const start = this.peek();
+
         let expr = this.primary();
 
         // Continually checks for "[]" and "?"
         while (this.check(TokenType.LeftBrace, TokenType.QuestionMark)) {
+            const end = this.peek();
+
             if (this.match(TokenType.LeftBrace)) {
                 this.consume(TokenType.RightBrace, `Expected a closing bracket for an array type.`);
-                expr = new ArrayExpr(expr);
+                expr = new ArrayExpr(expr, start, end);
             }
 
             if (this.match(TokenType.QuestionMark)) {

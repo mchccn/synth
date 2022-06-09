@@ -4,8 +4,7 @@ import { createBaseProvider } from "./generators.js";
 export const string = createBaseProvider({
     identifier: "string",
     defaultAndExpectedArgs: { boxed: false },
-    executor: ({ boxed }) => {
-        return new StringNode(boxed);
-    },
+    executor: ({ boxed }) => new StringNode(boxed),
+    compile: (args) => `new StringNode(${args.boxed})`,
     getLints: () => [],
 });

@@ -28,7 +28,7 @@ export abstract class Expr {
 }
 
 export class ArrayExpr extends Expr {
-    constructor(readonly expr: Expr) {
+    constructor(readonly expr: Expr, readonly start: Token, readonly end: Token) {
         super();
 
         this.provided = Array.from(arguments);

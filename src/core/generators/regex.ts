@@ -6,9 +6,8 @@ export const regex = createProviderExtension({
         pattern: "",
         flags: "",
     },
-    executor: (node, args) => {
-        return node.constraint(new RegexConstraint(args));
-    },
+    executor: (node, args) => node.constraint(new RegexConstraint(args)),
+    compile: (args) => `new RegexConstraint(${JSON.stringify(args)})`,
     getLints: lintsPipe(requiredArgs(["pattern"])),
     preferredProviders: ["string"],
 });

@@ -7,9 +7,8 @@ export const min = createProviderExtension({
         value: -Infinity,
         exclusive: false,
     },
-    executor: (node, args) => {
-        return node.constraint(new MinConstraint(args));
-    },
+    executor: (node, args) => node.constraint(new MinConstraint(args)),
+    compile: (args) => `new MinConstraint(${JSON.stringify(args)})`,
     getLints: lintsPipe(mutuallyExclusive("length", "value")),
     preferredProviders: ["number", "string"],
     preferredArgs: {

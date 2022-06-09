@@ -7,9 +7,8 @@ export const max = createProviderExtension({
         value: Infinity,
         exclusive: false,
     },
-    executor: (node, args) => {
-        return node.constraint(new MaxConstraint(args));
-    },
+    executor: (node, args) => node.constraint(new MaxConstraint(args)),
+    compile: (args) => `new MaxConstraint(${JSON.stringify(args)})`,
     getLints: lintsPipe(mutuallyExclusive("length", "value")),
     preferredProviders: ["number", "string"],
     preferredArgs: {

@@ -1,4 +1,4 @@
-// cd dist/modules && for f in $(ls | grep -v index.js | grep .js); do echo "export * from \"./$f\";"; done && cd ../..
+// cd dist/core/providers && for f in $(ls | grep -v index.js | grep .js); do echo "export * from \"./$f\";"; done && cd ../../..
 export * from "./array.js";
 export * from "./bigint.js";
 export * from "./boolean.js";
