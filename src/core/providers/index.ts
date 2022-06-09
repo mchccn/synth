@@ -6,7 +6,6 @@ export * from "./function.js";
 export * from "./literal.js";
 export * from "./node.js";
 export * from "./noop.js";
-export * from "./not.js";
 export * from "./null.js";
 export * from "./number.js";
 export * from "./object.js";
