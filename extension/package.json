@@ -1,0 +1,47 @@
+{
+    "name": "synth",
+    "publisher": "kelsny",
+    "displayName": "@kelsny/synth",
+    "description": "Adds language support for @kelsny/synth in VSCode.",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.67.2"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "synth",
+                "aliases": [
+                    "Synth",
+                    "synth"
+                ],
+                "extensions": [
+                    ".synth"
+                ],
+                "configuration": "./language-configuration.json",
+                "icon": {
+                    "dark": "./icons/synth.png",
+                    "light": "./icons/synth.png"
+                }
+            }
+        ],
+        "grammars": [
+            {
+                "language": "synth",
+                "scopeName": "source.synth",
+                "path": "./syntaxes/synth.tmLanguage.json"
+            }
+        ]
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kelsny/synth.git"
+    },
+    "bugs": {
+        "url": "https://github.com/kelsny/synth/issues"
+    },
+    "homepage": "https://github.com/kelsny/synth#readme"
+}

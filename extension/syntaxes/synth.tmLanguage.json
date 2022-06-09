@@ -1,0 +1,64 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Synth",
+    "patterns": [
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#constants"
+        },
+        {
+            "include": "#comments"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.single-line.synth",
+                    "begin": "#",
+                    "end": "\n"
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.synth",
+                    "match": "\\b(number|string|boolean|bigint|symbol|function|null|undefined)\\b"
+                }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.quo",
+                    "begin": "\"",
+                    "end": "\""
+                },
+                {
+                    "name": "string.quoted.single.quo",
+                    "begin": "'",
+                    "end": "'"
+                }
+            ]
+        },
+        "constants": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.decimal.synth",
+                    "match": "\\d+(\\.\\d*)?"
+                },
+                {
+                    "name": "constant.language.synth",
+                    "match": "\\b(true|false)\\b"
+                }
+            ]
+        }
+    },
+    "scopeName": "source.synth"
+}
