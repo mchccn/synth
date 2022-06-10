@@ -15,7 +15,8 @@
         "test": "mocha",
         "test:watch": "mocha && chokidar \"**/*.ts\" -c \"mocha || exit 0\"",
         "build": "tsc",
-        "build:watch": "tsc -w"
+        "build:watch": "tsc -w",
+        "ext:syntax": "tsc scripts/syntaxes.ts --module esnext --target esnext && (node scripts/syntaxes.js || rm scripts/syntaxes.js)  && rm scripts/syntaxes.js"
     },
     "repository": {
         "type": "git",

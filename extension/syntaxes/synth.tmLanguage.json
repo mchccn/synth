@@ -2,12 +2,38 @@
     "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
     "name": "Synth",
     "patterns": [
-        { "include": "#keywords" },
-        { "include": "#strings" },
-        { "include": "#constants" },
-        { "include": "#comments" }
+        {
+            "include": "#punctuation"
+        },
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#property"
+        },
+        {
+            "include": "#constants"
+        }
     ],
     "repository": {
+        "punctuation": {
+            "patterns": [
+                {
+                    "name": "punctuation.definition.block.synth",
+                    "match": "[\\{\\}\\[\\]]"
+                },
+                {
+                    "name": "meta.brace.synth",
+                    "match": "[\\(\\)]"
+                }
+            ]
+        },
         "comments": {
             "patterns": [
                 {
@@ -20,22 +46,86 @@
         "keywords": {
             "patterns": [
                 {
-                    "name": "keyword.control.synth",
-                    "match": "\\b(number|string|boolean|bigint|symbol|function|null|undefined)\\b"
+                    "name": "function.synth",
+                    "match": "\\b(bigint|boolean|function|max|min|null|number|range|regex|string|symbol|undefined)\\b"
+                }
+            ]
+        },
+        "property": {
+            "patterns": [
+                {
+                    "name": "variable.synth",
+                    "match": "[a-zA-Z_$][a-zA-Z0-9_$]*"
                 }
             ]
         },
         "strings": {
             "patterns": [
                 {
+                    "name": "string.source.double.quo",
+                    "begin": "s\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.synth",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "name": "string.source.single.quo",
+                    "begin": "s'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.synth",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "name": "string.regexp.double.quo",
+                    "begin": "r\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.synth",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "name": "string.regexp.single.quo",
+                    "begin": "r'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.synth",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
                     "name": "string.quoted.double.quo",
                     "begin": "\"",
-                    "end": "\""
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.synth",
+                            "match": "\\\\."
+                        }
+                    ]
                 },
                 {
                     "name": "string.quoted.single.quo",
                     "begin": "'",
-                    "end": "'"
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.synth",
+                            "match": "\\\\."
+                        }
+                    ]
                 }
             ]
         },
@@ -58,7 +148,7 @@
                     "match": "[\\d_]+(\\.[\\d_]*)?(e[\\d_]+(\\.[\\d_]*)?)?"
                 },
                 {
-                    "name": "constant.language.synth",
+                    "name": "support.variable.synth",
                     "match": "\\b(true|false)\\b"
                 }
             ]

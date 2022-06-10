@@ -1,8 +1,9 @@
+
 {
     "name": "synth",
     "publisher": "kelsny",
     "displayName": "@kelsny/synth",
-    "description": "Adds language support for @kelsny/synth in VSCode.",
+    "description": "⚡️ A tool for synthesizing types into runtime validators.",
     "version": "0.0.1",
     "engines": {
         "vscode": "^1.67.2"
