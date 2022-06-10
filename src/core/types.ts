@@ -35,7 +35,7 @@ export type GetObjectType<
     ? { [K in keyof O]: O[K] }
     : never;
 
-export type NoStrictObjectNodesInIntersection = `Strict object nodes are disallowed in an intersection`;
+export type NoStrictObjectNodesInIntersection = `Strict object nodes are disallowed in an intersection.`;
 
 export type HighlightColors = Record<Methods<typeof chalk>, TokenType[]>;
 
