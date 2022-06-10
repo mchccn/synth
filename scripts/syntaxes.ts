@@ -149,7 +149,7 @@ const tmLanguage = {
     scopeName: "source.synth",
 };
 
-const folder = new URL(import.meta.url).pathname.replaceAll("/", sep).replace(/\/([^/]+)$/, "");
+const folder = new URL(import.meta.url).pathname.replace(/\//, sep).replace(/\/([^/]+)$/, "");
 
 writeFileSync(
     join(folder, "..", "extension", "syntaxes", "synth.tmLanguage.json"),
