@@ -1,8 +1,8 @@
 {
-    type: "PLUS";
+    type: string;
     lhs: {
         type: "CONSTANT";
-        value: number range(start: 0, end: 100);
+        value: number;
     };
     rhs: {
         type: "CONSTANT";

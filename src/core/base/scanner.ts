@@ -308,16 +308,16 @@ export class Scanner {
         return /^\d$/.test(c);
     }
 
-    private isHexDigit(c: string) {
-        return /^[0-9a-fA-F]$/.test(c);
+    private isBinaryDigit(c: string) {
+        return /^[01]$/.test(c);
     }
 
     private isOctalDigit(c: string) {
         return /^[0-7]$/.test(c);
     }
 
-    private isBinaryDigit(c: string) {
-        return /^[01]$/.test(c);
+    private isHexDigit(c: string) {
+        return /^[0-9a-fA-F]$/.test(c);
     }
 
     private isAlpha(c: string) {
