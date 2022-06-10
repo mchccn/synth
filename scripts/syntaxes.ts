@@ -6,8 +6,8 @@ const tmLanguage = {
     $schema: "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
     name: "Synth",
     patterns: [
-        { include: "#punctuation" },
         { include: "#comments" },
+        { include: "#punctuation" },
         { include: "#keywords" },
         { include: "#strings" },
         { include: "#property" },
@@ -16,6 +16,14 @@ const tmLanguage = {
     repository: {
         punctuation: {
             patterns: [
+                {
+                    name: "punctuation.terminator.statement.synth",
+                    match: ";",
+                },
+                {
+                    name: "keyword.operator.synth",
+                    match: ":",
+                },
                 {
                     name: "punctuation.definition.block.synth",
                     match: "[\\{\\}\\[\\]]",
@@ -38,8 +46,18 @@ const tmLanguage = {
         keywords: {
             patterns: [
                 {
+                    name: "type.synth",
+                    match: `\\b(${Object.entries(generators)
+                        .filter(([, v]) => !v.isModifier)
+                        .map(([k]) => k)
+                        .join("|")})\\b`,
+                },
+                {
                     name: "function.synth",
-                    match: `\\b(${Object.keys(generators).join("|")})\\b`,
+                    match: `\\b(${Object.entries(generators)
+                        .filter(([, v]) => v.isModifier)
+                        .map(([k]) => k)
+                        .join("|")})\\b`,
                 },
             ],
         },

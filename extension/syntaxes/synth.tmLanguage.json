@@ -3,10 +3,10 @@
     "name": "Synth",
     "patterns": [
         {
-            "include": "#punctuation"
+            "include": "#comments"
         },
         {
-            "include": "#comments"
+            "include": "#punctuation"
         },
         {
             "include": "#keywords"
@@ -24,6 +24,14 @@
     "repository": {
         "punctuation": {
             "patterns": [
+                {
+                    "name": "punctuation.terminator.statement.synth",
+                    "match": ";"
+                },
+                {
+                    "name": "keyword.operator.synth",
+                    "match": ":"
+                },
                 {
                     "name": "punctuation.definition.block.synth",
                     "match": "[\\{\\}\\[\\]]"
@@ -46,8 +54,12 @@
         "keywords": {
             "patterns": [
                 {
+                    "name": "type.synth",
+                    "match": "\\b(bigint|boolean|function|null|number|string|symbol|undefined)\\b"
+                },
+                {
                     "name": "function.synth",
-                    "match": "\\b(bigint|boolean|function|max|min|null|number|range|regex|string|symbol|undefined)\\b"
+                    "match": "\\b(max|min|range|regex)\\b"
                 }
             ]
         },
