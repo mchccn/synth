@@ -1,7 +1,7 @@
 {
     "name": "@kelsny/synth",
     "version": "0.0.1",
-    "description": "Synthesize your types into real validators at runtime.",
+    "description": "A tool for synthesizing types into runtime validators.",
     "bin": {
         "synth": "dist/bin.js"
     },
