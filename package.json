@@ -16,8 +16,8 @@
         "test:watch": "mocha && chokidar \"**/*.ts\" -c \"mocha || exit 0\"",
         "build": "tsc",
         "build:watch": "tsc -w",
-        "ext:syntaxes": "tsc scripts/syntaxes.ts --moduleResolution node --module esnext --target esnext && (node scripts/syntaxes.js || rm scripts/syntaxes.js)  && rm scripts/syntaxes.js",
-        "meta:lc": "tsc scripts/linecount.ts --moduleResolution node --module esnext --target esnext && (node scripts/linecount.js || rm scripts/linecount.js) && rm scripts/linecount.js"
+        "ext:syntaxes": "tsc scripts/syntaxes.ts --moduleResolution node --module esnext --target esnext && (node scripts/syntaxes.js || rm scripts/syntaxes.js)  && (rm scripts/syntaxes.js || exit 0)",
+        "meta:lc": "tsc scripts/linecount.ts --moduleResolution node --module esnext --target esnext && (node scripts/linecount.js || rm scripts/linecount.js) && (rm scripts/linecount.js || exit 0)"
     },
     "repository": {
         "type": "git",
