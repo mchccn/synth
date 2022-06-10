@@ -14,15 +14,21 @@ export default async () => {
             "--help": false,
             "--extension": "synth",
             "--clear": false,
+            "--show": false,
+            "--print": false,
         },
         arg({
             "--help": Boolean,
             "--extension": String,
             "--clear": Boolean,
+            "--show": Boolean,
+            "--print": Boolean,
 
             "-h": "--help",
             "-e": "--extension",
             "-c": "--clear",
+            "-s": "--show",
+            "-p": "--print",
         }),
     );
 
@@ -33,28 +39,37 @@ export default async () => {
         return;
     }
 
+    if (args["--show"]) process.env.SYNTH_SHOW_LINTS = "true";
+    if (args["--print"]) process.env.SYNTH_PRINT_ONLY = "true";
+
     if (!args._.length || args["--help"]) return console.log(help);
 
-    const start = Date.now();
+    if (!process.env.SYNTH_PRINT_ONLY) {
+        const start = Date.now();
 
-    console.log("📁 Retrieving all files...");
+        console.log("📁 Retrieving all files...");
 
-    const paths = await allFiles(join(process.cwd(), args._[0]), { ext: args["--extension"] });
+        const paths = await allFiles(join(process.cwd(), args._[0]), { ext: args["--extension"] });
 
-    console.log("🔄 Generating JavaScript and type declarations...");
+        console.log("🔄 Generating JavaScript and type declarations...");
 
-    console.log();
+        console.log();
 
-    const [js, ts] = await generate(paths);
+        const [js, ts] = await generate(paths);
 
-    console.log();
+        console.log();
 
-    console.log("📝 Writing results to files...");
+        console.log("📝 Writing results to files...");
 
-    await writeFile(join(root, "..", "precompiled.js"), js, "utf8");
-    await writeFile(join(root, "..", "precompiled.d.ts"), ts, "utf8");
+        await writeFile(join(root, "..", "precompiled.js"), js, "utf8");
+        await writeFile(join(root, "..", "precompiled.d.ts"), ts, "utf8");
 
-    console.log(`⚡︎ Done in ${Date.now() - start}ms!`);
+        console.log(`⚡︎ Done in ${Date.now() - start}ms!`);
+    } else {
+        const paths = await allFiles(join(process.cwd(), args._[0]), { ext: args["--extension"] });
 
-    return;
+        const [out] = await generate(paths);
+
+        console.log(out);
+    }
 };

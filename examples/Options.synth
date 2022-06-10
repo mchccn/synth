@@ -6,6 +6,6 @@
     logLevel?: number;
     stdio?: [string, string, string];
     override?: {
-        r".+": boolean;
+        r".+": --42;
     };
 }

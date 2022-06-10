@@ -1,7 +1,8 @@
+import chalk from "chalk";
 import { Parser } from "../core/base/parser.js";
 import { Scanner } from "../core/base/scanner.js";
 import { JSGenerator } from "../core/tools/javascript.js";
-import { Linter } from "../core/tools/linter.js";
+import { Linter, LintSeverity } from "../core/tools/linter.js";
 import { Resolver } from "../core/tools/resolver.js";
 import { TSGenerator } from "../core/tools/typescript.js";
 
@@ -20,7 +21,44 @@ export function compile(template: TemplateStringsArray | string, ...values: unkn
 
     const lints = new Linter().lint(expr);
 
-    Linter.display(source, lints);
+    if (!process.env.SYNTH_PRINT_ONLY)
+        if (!process.env.SYNTH_SHOW_LINTS) {
+            if (lints.length) {
+                if (lints.every((lint) => lint.severity === LintSeverity.Hint))
+                    console.log(
+                        `ℹ️ ${chalk.blueBright("Hints available")} ${chalk.dim(process.env.SYNTH_COMPILING_PATH)}`,
+                    );
+                else {
+                    const warnings = Linter.filter(lints, LintSeverity.Warning).length;
+                    const errors = Linter.filter(lints, LintSeverity.Error).length;
+                    const fatals = Linter.filter(lints, LintSeverity.Fatal).length;
+
+                    if (!errors && !fatals)
+                        console.log(
+                            `⚠️  ${chalk.yellow(`${warnings} warning${warnings !== 1 ? "s" : ""} given`)} ${chalk.dim(
+                                process.env.SYNTH_COMPILING_PATH,
+                            )}`,
+                        );
+                    else {
+                        console.log(
+                            `❌ ${chalk.red(
+                                fatals
+                                    ? `${fatals} fatal mistake${fatals !== 1 ? "s" : ""}`
+                                    : `${errors} error${errors !== 1 ? "s" : ""} found`,
+                            )} ${chalk.dim(process.env.SYNTH_COMPILING_PATH)}`,
+                        );
+
+                        Linter.display(source, lints);
+                    }
+                }
+            } else
+                console.log(
+                    `✅ ${chalk.greenBright("All checks passed")} ${chalk.dim(process.env.SYNTH_COMPILING_PATH)}`,
+                );
+        } else {
+            console.log(`${chalk.dim(process.env.SYNTH_COMPILING_PATH)}`);
+            Linter.display(source, lints);
+        }
 
     const node = new JSGenerator().generate(resolved);
 

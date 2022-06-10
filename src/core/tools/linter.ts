@@ -69,7 +69,7 @@ export class Linter implements ExprVisitor<Lint[]> {
         return lints.filter((lint) => lint.severity === severity);
     }
 
-    static header(lints: Lint[], bound: number) {
+    static header(lints: Lint[], bound?: number) {
         const hints = Linter.filter(lints, LintSeverity.Hint).length;
         const warnings = Linter.filter(lints, LintSeverity.Warning).length;
         const errors = Linter.filter(lints, LintSeverity.Error).length;
@@ -90,7 +90,7 @@ export class Linter implements ExprVisitor<Lint[]> {
             `${errors} error${errors !== 1 ? "s" : ""}`,
         )}, ${chalk[fatals ? "red" : "gray"](`${fatals} fatal mistake${fatals !== 1 ? "s" : ""}`)}`;
 
-        return `${original} ${chalk.dim("─".repeat(Math.max(bound - bland.length, 0)))}`;
+        return bound ? `${original} ${chalk.dim("─".repeat(Math.max(bound - bland.length, 0)))}` : original;
     }
 
     static display(
@@ -371,7 +371,6 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
         });
     }
 
-
     visitPropExpr(expr: PropExpr): Lint[] {
         return this.beforeVisit(expr, () => {
             const lints = expr.value.accept(this);
@@ -385,35 +384,9 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
     }
 
     visitUnaryExpr(expr: UnaryExpr): Lint[] {
-        return this.beforeVisit(
-            expr,
-            () => {
-                const lints = [];
+        if (expr.operator.type === TokenType.Minus)
+            throw new Error("No negations should be left after the resolution step.");
 
-                if (expr.operator.type === TokenType.Minus) {
-                    this.unaryNegationOperatorDepth++;
-
-                    this.unaryNegationOperatorStack.push(expr);
-
-                    if (
-                        this.unaryNegationOperatorDepth >= 2 &&
-                        !(expr.expr instanceof UnaryExpr && expr.expr.operator.type === TokenType.Minus)
-                    )
-                        lints.push(
-                            new Lint(
-                                this.unaryNegationOperatorStack[0].operator,
-                                expr.operator,
-                                `Excessive use of the negation operator.`,
-                                LintSeverity.Hint,
-                            ),
-                        );
-                }
-
-                lints.push(...expr.expr.accept(this));
-
-                return lints;
-            },
-            { isVisitingUnaryOperator: true },
-        );
+        throw new Error("Unknown unary operator received.");
     }
 }

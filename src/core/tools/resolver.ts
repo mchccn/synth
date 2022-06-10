@@ -13,6 +13,7 @@ import {
     TupleExpr,
     UnaryExpr,
 } from "../base/expr.js";
+import { TokenType } from "../base/tokentype.js";
 import * as constraints from "../generators/index.js";
 import { SynthesizerSyntaxError } from "../shared/errors.js";
 
@@ -96,15 +97,19 @@ export class Resolver implements ExprVisitor<Expr> {
     }
 
     visitUnaryExpr(expr: UnaryExpr): Expr {
-        if (!(expr.expr instanceof LiteralExpr) || typeof expr.expr.value !== "number")
-            throw new SynthesizerSyntaxError(
-                this.source,
-                expr.operator,
-                `Unary negation operator can only be used on number literals.`,
-            );
+        if (expr.operator.type === TokenType.Minus) {
+            if (expr.expr instanceof UnaryExpr) Reflect.set(expr, "expr", expr.expr.accept(this));
 
-        Reflect.set(expr, "expr", new LiteralExpr(-expr.expr.value, expr.expr.token));
+            if (!(expr.expr instanceof LiteralExpr) || typeof expr.expr.value !== "number")
+                throw new SynthesizerSyntaxError(
+                    this.source,
+                    expr.operator,
+                    `Unary negation operator can only be used on number literals.`,
+                );
 
-        return expr;
+            return new LiteralExpr(-expr.expr.value, expr.expr.token);
+        }
+
+        throw new Error("Unknown unary operator received.");
     }
 }
