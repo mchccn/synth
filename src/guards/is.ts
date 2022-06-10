@@ -1,6 +1,6 @@
-import type { ValidationNode } from "src/core/providers/node.js";
-import type { Synthesized } from "src/core/synthesize.js";
-import type { GetNodeType } from "src/core/types.js";
+import type { ValidationNode } from "../core/providers/node.js";
+import type { Synthesized } from "../core/synthesize.js";
+import type { GetNodeType } from "../core/types.js";
 
 export function is<T extends ValidationNode>(s: Synthesized<T>): (value: unknown) => value is GetNodeType<T>;
 export function is<T extends ValidationNode>(s: Synthesized<T>, value: unknown): value is GetNodeType<T>;

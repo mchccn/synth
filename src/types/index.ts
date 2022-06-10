@@ -1,0 +1,13 @@
+// cd dist/types && for f in $(ls | grep -v index.js | grep -v generators.js | grep .js); do echo "export * from \"./$f\";"; done && cd ../..
+export * from "./array.js";
+export * from "./bigint.js";
+export * from "./boolean.js";
+export * from "./function.js";
+export * from "./literal.js";
+export * from "./null.js";
+export * from "./object.js";
+export * from "./optional.js";
+export * from "./string.js";
+export * from "./symbol.js";
+export * from "./tuple.js";
+export * from "./undefined.js";
