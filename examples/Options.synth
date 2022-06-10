@@ -1,0 +1,11 @@
+{
+    type: symbol;
+    # union of types will be supported in the future
+    mode: string regex(pattern: "development|production|testing");
+    dev?: boolean;
+    logLevel?: number;
+    stdio?: [string, string, string];
+    override?: {
+        r".+": boolean;
+    };
+}

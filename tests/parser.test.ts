@@ -6,7 +6,6 @@ import {
     GroupingExpr,
     LiteralExpr,
     ObjectExpr,
-    OptionalExpr,
     PropExpr,
     TupleExpr,
     UnaryExpr,
@@ -80,51 +79,16 @@ describe("Synthesizer parser", () => {
             .that.equals(42);
     });
 
-    suite(
-        "Correctly parses post modifiers",
-        [`string?`, `string[]`, `string[]?`, `string?[]`] as const,
-        ([so, ar, ao, oa]) => {
-            expect(so)
-                .to.be.an.instanceof(OptionalExpr)
-                .and.to.have.a.property("expr")
-                .that.is.an.instanceof(CallExpr)
-                .and.to.have.a.property("identifier")
-                .that.is.an.instanceof(Token)
-                .and.to.have.a.property("lexeme")
-                .that.equals("string");
-
-            expect(ar)
-                .to.be.an.instanceof(ArrayExpr)
-                .and.to.have.a.property("expr")
-                .that.is.an.instanceof(CallExpr)
-                .and.to.have.a.property("identifier")
-                .that.is.an.instanceof(Token)
-                .and.to.have.a.property("lexeme")
-                .that.equals("string");
-
-            expect(ao)
-                .to.be.an.instanceof(OptionalExpr)
-                .and.to.have.a.property("expr")
-                .that.is.an.instanceof(ArrayExpr)
-                .and.to.have.a.property("expr")
-                .that.is.an.instanceof(CallExpr)
-                .and.to.have.a.property("identifier")
-                .that.is.an.instanceof(Token)
-                .and.to.have.a.property("lexeme")
-                .that.equals("string");
-
-            expect(oa)
-                .that.is.an.instanceof(ArrayExpr)
-                .and.to.have.a.property("expr")
-                .to.be.an.instanceof(OptionalExpr)
-                .and.to.have.a.property("expr")
-                .that.is.an.instanceof(CallExpr)
-                .and.to.have.a.property("identifier")
-                .that.is.an.instanceof(Token)
-                .and.to.have.a.property("lexeme")
-                .that.equals("string");
-        },
-    );
+    suite("Correctly parses post modifiers", [`string[]`] as const, ([ar]) => {
+        expect(ar)
+            .to.be.an.instanceof(ArrayExpr)
+            .and.to.have.a.property("expr")
+            .that.is.an.instanceof(CallExpr)
+            .and.to.have.a.property("identifier")
+            .that.is.an.instanceof(Token)
+            .and.to.have.a.property("lexeme")
+            .that.equals("string");
+    });
 
     suite(
         "Correctly parses literal types",

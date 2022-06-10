@@ -6,7 +6,6 @@ import {
     GroupingExpr,
     LiteralExpr,
     ObjectExpr,
-    OptionalExpr,
     PropExpr,
     TupleExpr,
     UnaryExpr,
@@ -75,15 +74,11 @@ export class TSGenerator implements ExprVisitor<string> {
         return `ObjectNode<[${expr.props
             .map(
                 (p) =>
-                    `[${p.name instanceof RegExp ? `/${p.name.source}/` : JSON.stringify(p.name)}, ${p.value.accept(
-                        this,
-                    )}, ${p.optional}]`,
+                    `[${p.name instanceof RegExp ? "RegExp" : JSON.stringify(p.name)}, ${p.value.accept(this)}, ${
+                        p.optional
+                    }]`,
             )
-            .join(", ")}], ${expr.unstrict}>`;
-    }
-
-    visitOptionalExpr(expr: OptionalExpr): string {
-        return `OptionalNode<${expr.expr.accept(this)}>`;
+            .join(", ")}]>`;
     }
 
     visitPropExpr(expr: PropExpr): string {
@@ -91,7 +86,7 @@ export class TSGenerator implements ExprVisitor<string> {
     }
 
     visitTupleExpr(expr: TupleExpr): string {
-        return `TupleNode<[${expr.elements.map((e) => e.accept(this)).join(", ")}>`;
+        return `TupleNode<[${expr.elements.map((e) => e.accept(this)).join(", ")}]>`;
     }
 
     visitUnaryExpr(expr: UnaryExpr): string {

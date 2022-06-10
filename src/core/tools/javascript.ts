@@ -6,7 +6,6 @@ import {
     GroupingExpr,
     LiteralExpr,
     ObjectExpr,
-    OptionalExpr,
     PropExpr,
     TupleExpr,
     UnaryExpr,
@@ -97,11 +96,7 @@ export class JSGenerator implements ExprVisitor<string> {
                         this,
                     )}, ${p.optional}]`,
             )
-            .join(", ")}], ${expr.unstrict})`;
-    }
-
-    visitOptionalExpr(expr: OptionalExpr): string {
-        return `new OptionalNode(${expr.expr.accept(this)})`;
+            .join(", ")}])`;
     }
 
     visitPropExpr(expr: PropExpr): string {

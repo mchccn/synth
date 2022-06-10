@@ -9,7 +9,6 @@ import {
     GroupingExpr,
     LiteralExpr,
     ObjectExpr,
-    OptionalExpr,
     PropExpr,
     TupleExpr,
     UnaryExpr,
@@ -76,12 +75,6 @@ export class Resolver implements ExprVisitor<Expr> {
             "props",
             expr.props.map((prop) => prop.accept(this)),
         );
-
-        return expr;
-    }
-
-    visitOptionalExpr(expr: OptionalExpr): Expr {
-        Reflect.set(expr, "expr", expr.expr.accept(this));
 
         return expr;
     }

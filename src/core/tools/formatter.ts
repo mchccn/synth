@@ -6,7 +6,6 @@ import type {
     GroupingExpr,
     LiteralExpr,
     ObjectExpr,
-    OptionalExpr,
     PropExpr,
     TupleExpr,
     UnaryExpr,
@@ -48,13 +47,7 @@ export class Formatter implements ExprVisitor<string> {
     }
 
     visitObjectExpr(expr: ObjectExpr): string {
-        return `{\n${Formatter.pad(
-            expr.props.map((prop) => prop.accept(this)).join("\n") + (expr.unstrict ? "\n*" : ""),
-        )}\n}`;
-    }
-
-    visitOptionalExpr(expr: OptionalExpr): string {
-        return `${expr.expr.accept(this)}?`;
+        return `{\n${Formatter.pad(expr.props.map((prop) => prop.accept(this)).join("\n"))}\n}`;
     }
 
     visitPropExpr(expr: PropExpr): string {

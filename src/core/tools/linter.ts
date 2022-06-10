@@ -3,15 +3,12 @@
 import chalk from "chalk";
 import {
     ArrayExpr,
-    // BinaryExpr,
     CallExpr,
     Expr,
     ExprVisitor,
     GroupingExpr,
     LiteralExpr,
-    // MatchExpr,
     ObjectExpr,
-    OptionalExpr,
     PropExpr,
     TupleExpr,
     UnaryExpr,
@@ -374,9 +371,6 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
         });
     }
 
-    visitOptionalExpr(expr: OptionalExpr): Lint[] {
-        return this.beforeVisit(expr, () => expr.expr.accept(this));
-    }
 
     visitPropExpr(expr: PropExpr): Lint[] {
         return this.beforeVisit(expr, () => {

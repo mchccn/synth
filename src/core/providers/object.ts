@@ -3,21 +3,18 @@ import { ValidationNode } from "./node.js";
 
 export class ObjectNode<
     Entries extends readonly (readonly [string | RegExp, ValidationNode, boolean])[],
-    Unstrict extends boolean,
-> extends ValidationNode<GetObjectType<Entries, Unstrict>> {
-    constructor(readonly entries: Narrow<Entries>, readonly unstrict: Unstrict) {
+> extends ValidationNode<GetObjectType<Entries>> {
+    constructor(readonly entries: Narrow<Entries>) {
         super();
     }
 
     check(value: unknown) {
         if (typeof value !== "object" || !value) return false;
 
-        // If this is strict matching, then it cannot possibly match if the object has extra properties
         // We filter out all properties that aren't present in the entries, and if this is different than the original list, we've got extraneous properties
         if (
-            !this.unstrict &&
             Object.keys(value).filter((key) => this.entries.map(([name]) => name).includes(key)).length !==
-                Object.keys(value).length
+            Object.keys(value).length
         )
             return false;
 

@@ -8,7 +8,6 @@ import {
     GroupingExpr,
     LiteralExpr,
     ObjectExpr,
-    OptionalExpr,
     PropExpr,
     TupleExpr,
     UnaryExpr,
@@ -20,7 +19,6 @@ import { ArrayNode } from "../providers/array.js";
 import { LiteralNode } from "../providers/literal.js";
 import type { ValidationNode } from "../providers/node.js";
 import { ObjectNode } from "../providers/object.js";
-import { OptionalNode } from "../providers/optional.js";
 import { StringNode } from "../providers/string.js";
 import { TupleNode } from "../providers/tuple.js";
 
@@ -92,14 +90,7 @@ export class Generator implements ExprVisitor<ValidationNode> {
     }
 
     visitObjectExpr(expr: ObjectExpr): ValidationNode {
-        return new ObjectNode(
-            expr.props.map((p) => [p.name, p.value.accept(this), p.optional] as const),
-            expr.unstrict,
-        );
-    }
-
-    visitOptionalExpr(expr: OptionalExpr): ValidationNode {
-        return new OptionalNode(expr.expr.accept(this));
+        return new ObjectNode(expr.props.map((p) => [p.name, p.value.accept(this), p.optional] as const));
     }
 
     visitPropExpr(expr: PropExpr): ValidationNode {

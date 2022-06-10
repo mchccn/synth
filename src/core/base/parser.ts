@@ -7,7 +7,6 @@ import {
     GroupingExpr,
     LiteralExpr,
     ObjectExpr,
-    OptionalExpr,
     PropExpr,
     TupleExpr,
     UnaryExpr,
@@ -51,12 +50,9 @@ export class Parser {
                 this.consume(TokenType.Semicolon, `Expected a semicolon after a property definition.`);
             }
 
-            // Using a regular expression property disables strict matching
-            const unstrict = this.match(TokenType.Star) || properties.some((prop) => prop.name instanceof RegExp);
-
             this.consume(TokenType.RightBracket, `Expected a closing bracket after this expression.`, true);
 
-            const expr = new ObjectExpr(properties, start, this.previous(), unstrict);
+            const expr = new ObjectExpr(properties, start, this.previous());
 
             return expr;
         }
@@ -164,17 +160,13 @@ export class Parser {
 
         let expr = this.primary();
 
-        // Continually checks for "[]" and "?"
-        while (this.check(TokenType.LeftBrace, TokenType.QuestionMark)) {
+        // Continually checks for "[]"
+        while (this.check(TokenType.LeftBrace)) {
             const end = this.peek();
 
             if (this.match(TokenType.LeftBrace)) {
                 this.consume(TokenType.RightBrace, `Expected a closing bracket for an array type.`);
                 expr = new ArrayExpr(expr, start, end);
-            }
-
-            if (this.match(TokenType.QuestionMark)) {
-                expr = new OptionalExpr(this.previous(), expr);
             }
         }
 

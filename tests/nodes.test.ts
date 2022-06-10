@@ -6,7 +6,6 @@ import {
     NullNode,
     NumberNode,
     ObjectNode,
-    OptionalNode,
     StringNode,
     SymbolNode,
     TupleNode,
@@ -61,12 +60,6 @@ describe("Synthesizer validator nodes", () => {
         ).to.be.false;
     });
 
-    it("Works for optional types", () => {
-        expect(new OptionalNode(new StringNode(false)).check("string")).to.be.true;
-        expect(new OptionalNode(new StringNode(false)).check(42)).to.be.false;
-        expect(new OptionalNode(new StringNode(false)).check(undefined)).to.be.true;
-    });
-
     it("Works for tuples", () => {
         expect(new TupleNode([new StringNode(false)]).check(["string"])).to.be.true;
 
@@ -82,42 +75,30 @@ describe("Synthesizer validator nodes", () => {
     });
 
     it("Works for objects", () => {
-        expect(new ObjectNode([], false).check({})).to.be.true;
-        expect(new ObjectNode([], false).check({ extra: 0 })).to.be.false;
+        expect(new ObjectNode([]).check({})).to.be.true;
+        expect(new ObjectNode([]).check({ extra: 0 })).to.be.false;
 
-        expect(new ObjectNode([], true).check({})).to.be.true;
-        expect(new ObjectNode([], true).check({ extra: 0 })).to.be.true;
-
-        expect(new ObjectNode([["foo", new StringNode(false), false]], false).check({ foo: "string" })).to.be.true;
-        expect(new ObjectNode([["foo", new StringNode(false), true]], false).check({ foo: "string" })).to.be.true;
-        expect(new ObjectNode([["foo", new StringNode(false), true]], false).check({})).to.be.true;
+        expect(new ObjectNode([["foo", new StringNode(false), false]]).check({ foo: "string" })).to.be.true;
+        expect(new ObjectNode([["foo", new StringNode(false), true]]).check({ foo: "string" })).to.be.true;
+        expect(new ObjectNode([["foo", new StringNode(false), true]]).check({})).to.be.true;
 
         expect(
-            new ObjectNode(
-                [
-                    ["foo", new StringNode(false), false],
-                    ["bar", new StringNode(false), false],
-                ],
-                false,
-            ).check({ foo: "string" }),
+            new ObjectNode([
+                ["foo", new StringNode(false), false],
+                ["bar", new StringNode(false), false],
+            ]).check({ foo: "string" }),
         ).to.be.false;
         expect(
-            new ObjectNode(
-                [
-                    ["foo", new StringNode(false), false],
-                    ["bar", new NumberNode(false), true],
-                ],
-                false,
-            ).check({ foo: "string" }),
+            new ObjectNode([
+                ["foo", new StringNode(false), false],
+                ["bar", new NumberNode(false), true],
+            ]).check({ foo: "string" }),
         ).to.be.true;
         expect(
-            new ObjectNode(
-                [
-                    ["foo", new StringNode(false), false],
-                    ["bar", new NumberNode(false), false],
-                ],
-                false,
-            ).check({ foo: "string", bar: 42 }),
+            new ObjectNode([
+                ["foo", new StringNode(false), false],
+                ["bar", new NumberNode(false), false],
+            ]).check({ foo: "string", bar: 42 }),
         ).to.be.true;
     });
 });

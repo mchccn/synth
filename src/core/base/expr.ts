@@ -7,7 +7,6 @@ export interface ExprVisitor<R> {
     visitCallExpr(expr: CallExpr): R;
     visitLiteralExpr(expr: LiteralExpr): R;
     visitObjectExpr(expr: ObjectExpr): R;
-    visitOptionalExpr(expr: OptionalExpr): R;
     visitPropExpr(expr: PropExpr): R;
     visitTupleExpr(expr: TupleExpr): R;
     visitUnaryExpr(expr: UnaryExpr): R;
@@ -80,7 +79,7 @@ export class LiteralExpr extends Expr {
 }
 
 export class ObjectExpr extends Expr {
-    constructor(readonly props: PropExpr[], readonly start: Token, readonly end: Token, readonly unstrict: boolean) {
+    constructor(readonly props: PropExpr[], readonly start: Token, readonly end: Token) {
         super();
 
         this.provided = Array.from(arguments);
@@ -88,18 +87,6 @@ export class ObjectExpr extends Expr {
 
     accept<R>(visitor: ExprVisitor<R>): R {
         return visitor.visitObjectExpr(this);
-    }
-}
-
-export class OptionalExpr extends Expr {
-    constructor(readonly operator: Token, readonly expr: Expr) {
-        super();
-
-        this.provided = Array.from(arguments);
-    }
-
-    accept<R>(visitor: ExprVisitor<R>): R {
-        return visitor.visitOptionalExpr(this);
     }
 }
 

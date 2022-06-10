@@ -9,7 +9,6 @@ export * from "./noop.js";
 export * from "./null.js";
 export * from "./number.js";
 export * from "./object.js";
-export * from "./optional.js";
 export * from "./string.js";
 export * from "./symbol.js";
 export * from "./tuple.js";
