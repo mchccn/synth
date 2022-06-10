@@ -45,9 +45,8 @@ async function linecount(target: string, ext = "ts"): Promise<[count: number, sl
     return [NaN, NaN];
 }
 
-const targets = (process.argv[2] ?? process.env.LC_PATH ?? ".")
-    .split(/(?<!\\),/)
-    .map((path) => join(process.cwd(), path));
+const given = (process.argv[2] ?? process.env.LC_PATH ?? ".").split(/(?<!\\),/);
+const targets = given.map((path) => join(process.cwd(), path));
 const extension = process.argv[3] ?? "ts";
 
 const stats = await Promise.all(targets.map((d) => linecount(d, extension)));
@@ -73,7 +72,7 @@ console.log(
         .sort((a, b) => a[0] - b[0])
         .map(
             ([lines, sloc], i) => `
-${chalk.dim(targets[i])}
+${chalk.dim(given[i])}
 Total lines  ${chalk.gray(":")} ${grade(lines)}
 Source lines ${chalk.gray(":")} ${grade(sloc)}
 `,
