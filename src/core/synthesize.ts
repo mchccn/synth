@@ -30,13 +30,15 @@ export interface SynthesizerValidator {
 
 const synthesizedCache = new Map<string, Synthesized>();
 
-export function synthesize(
-    source: string,
-): Synthesized & { lint(config?: Parameters<typeof Linter.display>[2]): Synthesized };
+export function synthesize(source: string): Synthesized & {
+    lint(config?: Parameters<typeof Linter.display>[2]): Synthesized;
+};
 export function synthesize(
     template: TemplateStringsArray,
     ...values: unknown[]
-): Synthesized & { lint(config?: Parameters<typeof Linter.display>[2]): Synthesized };
+): Synthesized & {
+    lint(config?: Parameters<typeof Linter.display>[2]): Synthesized;
+};
 export function synthesize(template: TemplateStringsArray | string, ...values: unknown[]) {
     const source =
         typeof template !== "string"

@@ -9,7 +9,11 @@ class OverloadedFunction<Result = {}> {
 
     signature<
         S extends readonly Synthesized[],
-        E extends (...args: { [K in keyof S]: S[K] extends Synthesized<infer T> ? GetNodeType<T> : S[K] }) => unknown,
+        E extends (
+            ...args: {
+                [K in keyof S]: S[K] extends Synthesized<infer T> ? GetNodeType<T> : S[K];
+            }
+        ) => unknown
     >(signature: Narrow<S>, executor: E): OverloadedFunction<Result & { (...args: Parameters<E>): ReturnType<E> }> {
         this.#signatures.push([
             new Synthesized(new TupleNode(signature.map((s) => Reflect.get(s, Symbol.for(synthesizedModuleKey))))),

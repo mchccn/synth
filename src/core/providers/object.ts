@@ -2,7 +2,7 @@ import type { GetObjectType, Narrow } from "../../types.js";
 import { ValidationNode } from "./node.js";
 
 export class ObjectNode<
-    Entries extends readonly (readonly [string | RegExp, ValidationNode, boolean])[],
+    Entries extends readonly (readonly [string | RegExp, ValidationNode, boolean])[]
 > extends ValidationNode<GetObjectType<Entries>> {
     constructor(readonly entries: Narrow<Entries>) {
         super();

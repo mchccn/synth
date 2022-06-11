@@ -3,7 +3,7 @@ import { ValidationNode } from "./node.js";
 
 export class TupleNode<
     Modules extends readonly ValidationNode[],
-    Type = GetTupleType<Modules>,
+    Type = GetTupleType<Modules>
 > extends ValidationNode<Type> {
     constructor(readonly modules: Narrow<Modules>) {
         super();

@@ -57,7 +57,9 @@ export default async () => {
         console.log("📁 Retrieving all files...");
 
         const paths = (await stat(join(process.cwd(), args._[0]))).isDirectory()
-            ? await allFiles(join(process.cwd(), args._[0]), { ext: args["--extension"] })
+            ? await allFiles(join(process.cwd(), args._[0]), {
+                  ext: args["--extension"],
+              })
             : [join(process.cwd(), args._[0])];
 
         console.log("🔄 Generating JavaScript and type declarations...");
@@ -76,7 +78,9 @@ export default async () => {
         console.log(`⚡︎ Done in ${Date.now() - start}ms!`);
     } else {
         const paths = (await stat(join(process.cwd(), args._[0]))).isDirectory()
-            ? await allFiles(join(process.cwd(), args._[0]), { ext: args["--extension"] })
+            ? await allFiles(join(process.cwd(), args._[0]), {
+                  ext: args["--extension"],
+              })
             : [join(process.cwd(), args._[0])];
 
         if (!process.env.SYNTH_MINIFY) {

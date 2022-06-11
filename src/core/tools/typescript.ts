@@ -65,9 +65,9 @@ export class TSGenerator implements ExprVisitor<string> {
             (v) => !generators[v.identifier.lexeme as keyof typeof generators].isModifier,
         )!!;
 
-        return (
-            generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<typeof createBaseProvider>
-        ).types(Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any);
+        return (generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<
+            typeof createBaseProvider
+        >).types(Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any);
     }
 
     visitObjectExpr(expr: ObjectExpr): string {

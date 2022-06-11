@@ -44,7 +44,10 @@ export class Generator implements ExprVisitor<ValidationNode> {
 
     visitLiteralExpr(expr: LiteralExpr): ValidationNode {
         if (expr.value instanceof RegExp)
-            return generators.regex(new StringNode(true), { pattern: expr.value.source, flags: "" });
+            return generators.regex(new StringNode(true), {
+                pattern: expr.value.source,
+                flags: "",
+            });
 
         return new LiteralNode(expr.value as any);
     }
@@ -73,9 +76,9 @@ export class Generator implements ExprVisitor<ValidationNode> {
         // Isolate provider and generate it first
         const [provider] = validators.splice(index, 1);
 
-        const node = (
-            generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<typeof createBaseProvider>
-        )(Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any);
+        const node = (generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<
+            typeof createBaseProvider
+        >)(Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any);
 
         validators.forEach((v) => {
             (generators[v.identifier.lexeme as keyof typeof generators] as ReturnType<typeof createProviderExtension>)(

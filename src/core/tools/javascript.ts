@@ -39,7 +39,10 @@ export class JSGenerator implements ExprVisitor<string> {
     visitLiteralExpr(expr: LiteralExpr): string {
         if (expr.value instanceof RegExp)
             return generators.string.compile({ boxed: true }, [
-                generators.regex.compile({ pattern: expr.value.source, flags: "" }),
+                generators.regex.compile({
+                    pattern: expr.value.source,
+                    flags: "",
+                }),
             ]);
 
         return `new LiteralNode(${typeof expr.value === "undefined" ? "undefined" : JSON.stringify(expr.value)})`;
@@ -69,16 +72,14 @@ export class JSGenerator implements ExprVisitor<string> {
         // Isolate provider and generate it first
         const [provider] = validators.splice(index, 1);
 
-        const node = (
-            generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<typeof createBaseProvider>
-        ).compile(
+        const node = (generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<
+            typeof createBaseProvider
+        >).compile(
             Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
             validators.map((v) =>
-                (
-                    generators[v.identifier.lexeme as keyof typeof generators] as ReturnType<
-                        typeof createProviderExtension
-                    >
-                ).compile(
+                (generators[v.identifier.lexeme as keyof typeof generators] as ReturnType<
+                    typeof createProviderExtension
+                >).compile(
                     Object.fromEntries([...v.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
                 ),
             ),

@@ -78,8 +78,16 @@ describe("Synthesizer validator nodes", () => {
         expect(new ObjectNode([]).check({})).to.be.true;
         expect(new ObjectNode([]).check({ extra: 0 })).to.be.true;
 
-        expect(new ObjectNode([["foo", new StringNode(false), false]]).check({ foo: "string" })).to.be.true;
-        expect(new ObjectNode([["foo", new StringNode(false), true]]).check({ foo: "string" })).to.be.true;
+        expect(
+            new ObjectNode([["foo", new StringNode(false), false]]).check({
+                foo: "string",
+            }),
+        ).to.be.true;
+        expect(
+            new ObjectNode([["foo", new StringNode(false), true]]).check({
+                foo: "string",
+            }),
+        ).to.be.true;
         expect(new ObjectNode([["foo", new StringNode(false), true]]).check({})).to.be.true;
 
         expect(

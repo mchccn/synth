@@ -13,17 +13,20 @@ export type Narrow<T> =
     | Extract<T, number | string | boolean | bigint | symbol | null | undefined | []>
     | ([T] extends [[]] ? [] : { [K in keyof T]: Narrow<T[K]> });
 
-export type GetTupleType<Modules> = { [K in keyof Modules]: TryNodeType<Modules[K]> };
+export type GetTupleType<Modules> = {
+    [K in keyof Modules]: TryNodeType<Modules[K]>;
+};
 
 export type GetObjectType<T extends readonly (readonly [string | RegExp, ValidationNode, boolean])[]> = {
     [K in Extract<T[number], readonly [any, any, false]>[0] as K extends RegExp ? string : K]: K extends RegExp
         ? GetNodeType<Extract<T[number], readonly [RegExp, any, any]>[1]>
         : GetNodeType<Extract<T[number], readonly [K, any, any]>[1]>;
-} & {
-    [K in Extract<T[number], readonly [any, any, true]>[0]]?: GetNodeType<
-        Extract<T[number], readonly [K, any, any]>[1]
-    >;
-} extends infer O
+} &
+    {
+        [K in Extract<T[number], readonly [any, any, true]>[0]]?: GetNodeType<
+            Extract<T[number], readonly [K, any, any]>[1]
+        >;
+    } extends infer O
     ? { [K in keyof O]: O[K] }
     : never;
 
