@@ -6,10 +6,14 @@ import { Linter } from "./tools/linter.js";
 import { Resolver } from "./tools/resolver.js";
 
 export class Synthesized<Matcher extends ValidationNode = ValidationNode> {
-    constructor(private readonly module: Matcher) {}
+    readonly #module: Matcher;
 
-    private check(value: unknown) {
-        return this.module.check(value);
+    constructor(module: Matcher) {
+        this.#module = module;
+    }
+
+    #check(value: unknown) {
+        return this.#module.check(value);
     }
 }
 
@@ -17,6 +21,8 @@ export interface SynthesizerValidator {
     readonly isConstraint: boolean;
     check(value: unknown): boolean;
 }
+
+const synthesizedCache = new Map<string, Synthesized>();
 
 export function synthesize(
     source: string,
@@ -26,9 +32,10 @@ export function synthesize(
     ...values: unknown[]
 ): Synthesized & { lint(config?: Parameters<typeof Linter.display>[2]): Synthesized };
 export function synthesize(template: TemplateStringsArray | string, ...values: unknown[]) {
-    const source = Array.isArray(template)
-        ? template.reduce((source, part, i) => `${source}${part}${String(values[i] ?? "")}`, "")
-        : template;
+    const source =
+        typeof template !== "string"
+            ? template.reduce((source, part, i) => `${source}${part}${String(values[i] ?? "")}`, "")
+            : template;
 
     const tokens = new Scanner(source).scanTokens();
 
@@ -41,6 +48,8 @@ export function synthesize(template: TemplateStringsArray | string, ...values: u
     const node = new Generator().generate(resolved);
 
     const s = new Synthesized(node);
+
+    // synthesizedCache.set(source.trim(), s);
 
     return Object.assign(s, {
         lint(config?: Parameters<typeof Linter.display>[2]) {

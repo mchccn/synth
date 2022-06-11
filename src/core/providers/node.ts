@@ -2,7 +2,7 @@ import type { SynthesizerValidator } from "../synthesize";
 import type { Constraint } from "../validators/constraint.js";
 
 export abstract class ValidationNode<Type = unknown> implements SynthesizerValidator {
-    private _: Type = null!;
+    #_: Type = null!;
 
     protected constraints = [] as Constraint<Type>[];
 

@@ -14,7 +14,6 @@ import { TokenType } from "../base/tokentype.js";
 import type { createBaseProvider, createProviderExtension } from "../generators/generators.js";
 import * as generators from "../generators/index.js";
 
-// ...
 export class JSGenerator implements ExprVisitor<string> {
     constructor(/* more shit here */) {}
 

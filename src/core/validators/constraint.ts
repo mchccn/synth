@@ -1,7 +1,7 @@
 import type { SynthesizerValidator } from "../synthesize";
 
 export abstract class Constraint<Type = unknown> implements SynthesizerValidator {
-    private _: Type = null!;
+    #_: Type = null!;
 
     readonly isConstraint = true;
 

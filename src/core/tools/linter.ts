@@ -38,21 +38,7 @@ export class Lint {
 }
 
 export class Linter implements ExprVisitor<Lint[]> {
-    private unaryNegationOperatorDepth = 0;
-    private unaryNegationOperatorStack = [] as UnaryExpr[];
-
-    private beforeVisit(
-        expr: Expr,
-        exec: () => Lint[],
-        options?: {
-            isVisitingUnaryOperator?: boolean;
-        },
-    ) {
-        if (!options?.isVisitingUnaryOperator) {
-            this.unaryNegationOperatorDepth = 0;
-            this.unaryNegationOperatorStack = [];
-        }
-
+    #beforeVisit(expr: Expr, exec: () => Lint[]) {
         if (expr.copied) return [];
 
         return exec();
@@ -183,11 +169,11 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
     }
 
     visitArrayExpr(expr: ArrayExpr): Lint[] {
-        return this.beforeVisit(expr, () => expr.expr.accept(this));
+        return this.#beforeVisit(expr, () => expr.expr.accept(this));
     }
 
     visitCallExpr(expr: CallExpr): Lint[] {
-        return this.beforeVisit(expr, () => {
+        return this.#beforeVisit(expr, () => {
             const lints = [] as Lint[];
 
             // Lint call with data from the generators
@@ -229,7 +215,7 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
     }
 
     visitGroupingExpr(expr: GroupingExpr): Lint[] {
-        return this.beforeVisit(expr, () => {
+        return this.#beforeVisit(expr, () => {
             const lints = [];
 
             const providers = [] as [Token, Token][];
@@ -346,11 +332,11 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
     }
 
     visitLiteralExpr(expr: LiteralExpr): Lint[] {
-        return this.beforeVisit(expr, () => []);
+        return this.#beforeVisit(expr, () => []);
     }
 
     visitObjectExpr(expr: ObjectExpr): Lint[] {
-        return this.beforeVisit(expr, () => {
+        return this.#beforeVisit(expr, () => {
             const lints = expr.props.flatMap((prop) => prop.accept(this));
 
             const used = [] as PropExpr["name"][];
@@ -372,7 +358,7 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
     }
 
     visitPropExpr(expr: PropExpr): Lint[] {
-        return this.beforeVisit(expr, () => {
+        return this.#beforeVisit(expr, () => {
             const lints = expr.value.accept(this);
 
             return lints;
@@ -380,7 +366,7 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
     }
 
     visitTupleExpr(expr: TupleExpr): Lint[] {
-        return this.beforeVisit(expr, () => expr.elements.flatMap((group) => group.accept(this)));
+        return this.#beforeVisit(expr, () => expr.elements.flatMap((group) => group.accept(this)));
     }
 
     visitUnaryExpr(expr: UnaryExpr): Lint[] {

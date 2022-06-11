@@ -1,8 +1,5 @@
-// resolves references and simplifies parsed expression
-
 import {
     ArrayExpr,
-    // BinaryExpr,
     CallExpr,
     Expr,
     ExprVisitor,
@@ -18,17 +15,17 @@ import * as constraints from "../generators/index.js";
 import { SynthesizerSyntaxError } from "../shared/errors.js";
 
 export class Resolver implements ExprVisitor<Expr> {
-    private source!: string;
+    #source!: string;
 
     constructor(/* more shit here */) {}
 
     resolve(source: string, expr: Expr) {
-        this.source = source;
+        this.#source = source;
 
         try {
             return expr.accept(this);
         } finally {
-            this.source = undefined as never;
+            this.#source = undefined as never;
         }
     }
 
@@ -41,14 +38,14 @@ export class Resolver implements ExprVisitor<Expr> {
     visitCallExpr(expr: CallExpr): Expr {
         [...expr.args.entries()].forEach(([name, arg]) => {
             if (!(arg instanceof LiteralExpr))
-                throw new SynthesizerSyntaxError(this.source, name, `Arguments must be literals.`);
+                throw new SynthesizerSyntaxError(this.#source, name, `Arguments must be literals.`);
 
             return arg.accept(this);
         });
 
         if (!(expr.identifier.lexeme in constraints))
             throw new SynthesizerSyntaxError(
-                this.source,
+                this.#source,
                 expr.identifier,
                 `The identifier '${expr.identifier.lexeme}' does not exist.`,
             );
@@ -102,7 +99,7 @@ export class Resolver implements ExprVisitor<Expr> {
 
             if (!(expr.expr instanceof LiteralExpr) || typeof expr.expr.value !== "number")
                 throw new SynthesizerSyntaxError(
-                    this.source,
+                    this.#source,
                     expr.operator,
                     `Unary negation operator can only be used on number literals.`,
                 );

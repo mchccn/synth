@@ -1,5 +1,3 @@
-// takes analyzed tree and generates pattern
-
 import {
     ArrayExpr,
     CallExpr,
