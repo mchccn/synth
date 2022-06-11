@@ -11,13 +11,6 @@ export class ObjectNode<
     check(value: unknown) {
         if (typeof value !== "object" || !value) return false;
 
-        // We filter out all properties that aren't present in the entries, and if this is different than the original list, we've got extraneous properties
-        if (
-            Object.keys(value).filter((key) => this.entries.map(([name]) => name).includes(key)).length !==
-            Object.keys(value).length
-        )
-            return false;
-
         // Consider string properties and regular expression properties separately
         return (
             this.entries
