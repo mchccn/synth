@@ -1,6 +1,6 @@
 import { TupleNode } from "../core/providers/tuple.js";
 import { synthesizedModuleKey } from "../core/shared/constants.js";
-import { Synthesized } from "../core/synthesize.js";
+import { synthesize, Synthesized } from "../core/synthesize.js";
 import { is } from "../guards/is.js";
 import type { GetNodeType, InferParams, Narrow, OverloadsFrom } from "../types.js";
 
@@ -37,6 +37,13 @@ export function overload(): OverloadedFunction;
 export function overload<S extends Record<string, (...args: any[]) => any>>(
     signatures: InferParams<S>,
 ): OverloadsFrom<S>;
-export function overload() {
-    return new OverloadedFunction();
+export function overload<S extends Record<string, (...args: any[]) => any>>(signatures?: InferParams<S>) {
+    if (!signatures) return new OverloadedFunction();
+
+    const of = new OverloadedFunction();
+
+    for (const [signature, executor] of Object.entries(signatures))
+        of.signature(synthesize(signature) as never, executor);
+
+    return of.finalize();
 }
