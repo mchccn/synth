@@ -1,7 +1,7 @@
 import type { ValidationNode } from "../core/providers/node.js";
 import { synthesizedCheckKey } from "../core/shared/constants.js";
 import type { Synthesized } from "../core/synthesize.js";
-import type { GetNodeType } from "../core/types.js";
+import type { GetNodeType } from "../types.js";
 
 export function is<T extends ValidationNode>(s: Synthesized<T>): (value: unknown) => value is GetNodeType<T>;
 export function is<T extends ValidationNode>(s: Synthesized<T>, value: unknown): value is GetNodeType<T>;

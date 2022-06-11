@@ -1,4 +1,4 @@
-import type { GetObjectType, Narrow } from "../types.js";
+import type { GetObjectType, Narrow } from "../../types.js";
 import { ValidationNode } from "./node.js";
 
 export class ObjectNode<
@@ -19,7 +19,8 @@ export class ObjectNode<
                     if (!((key as string) in value) && !optional) return false;
 
                     // If it's optional and wasn't present, then it should fall through to true
-                    if ((key as string) in value) if (!module.check(value[key as never])) return false;
+                    if ((key as string) in value)
+                        if (!(module as ValidationNode).check(value[key as never])) return false;
 
                     return true;
                 }) &&
@@ -31,7 +32,7 @@ export class ObjectNode<
                     if (!keys.length) return false;
 
                     // At least one property needs to satisfy the regular expression property's type for a match
-                    return keys.some((k) => module.check(value[k as never]));
+                    return keys.some((k) => (module as ValidationNode).check(value[k as never]));
                 }) &&
             this.satisfied(value as any)
         );

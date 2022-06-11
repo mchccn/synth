@@ -1,6 +1,6 @@
 import type { ValidationNode } from "../core/providers/node.js";
 import type { Synthesized } from "../core/synthesize.js";
-import type { GetNodeType } from "../core/types.js";
+import type { GetNodeType } from "../types.js";
 import { is } from "../guards/is.js";
 
 export function match() {

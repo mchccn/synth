@@ -1,7 +1,7 @@
 import type { CallExpr } from "../base/expr.js";
 import type { ValidationNode } from "../providers/node.js";
 import { Lint, LintSeverity } from "../tools/linter.js";
-import type { Narrow } from "../types.js";
+import type { Narrow } from "../../types.js";
 
 function mergeWithDefaults<T>(provided: Partial<T>, defaults: T) {
     const out = Object.assign({}, defaults);

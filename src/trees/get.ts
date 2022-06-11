@@ -5,7 +5,7 @@ export function get<T>(target: unknown, path: string[]): T {
                 ? key in result
                     ? result[key as keyof typeof result]
                     : undefined
-                : undefined) as T,
+                : undefined) as any,
         target as T,
     );
 }

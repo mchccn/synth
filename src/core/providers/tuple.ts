@@ -1,4 +1,4 @@
-import type { GetTupleType, Narrow } from "../types.js";
+import type { GetTupleType, Narrow } from "../../types.js";
 import { ValidationNode } from "./node.js";
 
 export class TupleNode<
@@ -13,7 +13,7 @@ export class TupleNode<
         return (
             Array.isArray(value) &&
             value.length === this.modules.length &&
-            value.every((e, i) => this.modules[i].check(e)) &&
+            value.every((e, i) => (this.modules[i] as ValidationNode).check(e)) &&
             this.satisfied(value as any)
         );
     }

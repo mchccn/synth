@@ -1,23 +1,17 @@
 import type chalk from "chalk";
-import type { TokenType } from "./base/tokentype.js";
-import type { ValidationNode } from "./providers/node.js";
-import type { Synthesized } from "./synthesize.js";
+import type { TokenType } from "./core/base/tokentype.js";
+import type { ValidationNode } from "./core/providers/node.js";
+import type { Synthesized } from "./core/synthesize.js";
 
 export type TryNodeType<T> = T extends ValidationNode<infer U> ? U : T;
 export type GetNodeType<T> = T extends ValidationNode<infer U> ? U : never;
 
 export type GetSynthesized<T> = T extends Synthesized<infer N> ? GetNodeType<N> : never;
 
-// Replace with better Narrow
-type NarrowHelper<T> =
-    | (T extends [] ? [] : never)
-    | (T extends string | number | bigint | boolean ? T : never)
-    | { [K in keyof T]: T[K] extends (...args: any[]) => unknown ? T[K] : NarrowHelper<T[K]> };
-
-type Try<A1 extends any, A2 extends any, Catch = never> = A1 extends A2 ? A1 : Catch;
-
-export type Narrow<T> = Try<T, [], NarrowHelper<T>>;
-//
+export type Narrow<T> =
+    | (T extends infer U ? U : never)
+    | Extract<T, number | string | boolean | bigint | symbol | null | undefined | []>
+    | ([T] extends [[]] ? [] : { [K in keyof T]: Narrow<T[K]> });
 
 export type GetTupleType<Modules> = { [K in keyof Modules]: TryNodeType<Modules[K]> };
 
@@ -40,3 +34,12 @@ export type HighlightColors = Record<Methods<typeof chalk>, TokenType[]>;
 export type Methods<T> = {
     [K in keyof T]: T[K] extends (...args: unknown[]) => any ? K : never;
 }[keyof T];
+
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
+export type OverloadsFrom<S> = UnionToIntersection<S[keyof S]>;
+
+export type InferParams<S extends Record<string, (...args: any[]) => any>> = {
+    // Parse `K` into parameter types
+    [K in keyof S]: (...args: Parameters<S[K]>) => ReturnType<S[K]>;
+};

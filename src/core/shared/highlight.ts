@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { Scanner } from "../base/scanner.js";
 import { TokenType } from "../base/tokentype.js";
-import type { HighlightColors, Methods } from "../types.js";
+import type { HighlightColors, Methods } from "../../types.js";
 import { SynthesizerSyntaxError } from "./errors.js";
 
 export function highlight(

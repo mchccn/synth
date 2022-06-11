@@ -1,7 +1,7 @@
 import { ObjectNode } from "../core/providers/object.js";
 import { synthesizedModuleKey } from "../core/shared/constants.js";
 import { Synthesized } from "../core/synthesize.js";
-import type { Narrow } from "../core/types.js";
+import type { Narrow } from "../types.js";
 
 export const object = <T extends Record<string, Synthesized>>(spec: Narrow<T>) =>
     new Synthesized(

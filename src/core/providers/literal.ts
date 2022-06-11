@@ -1,4 +1,4 @@
-import type { Narrow } from "../types.js";
+import type { Narrow } from "../../types.js";
 import { ValidationNode } from "./node.js";
 
 export class LiteralNode<Literal extends unknown> extends ValidationNode<Literal> {
