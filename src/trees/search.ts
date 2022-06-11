@@ -1,11 +1,11 @@
 import type { ValidationNode } from "../core/providers/node.js";
 import type { Synthesized } from "../core/synthesize.js";
 import type { GetNodeType } from "../types.js";
-import { get } from "./get.js";
 import { paths } from "./paths.js";
+import { retreive } from "./retreive.js";
 
-export function search<T extends ValidationNode>(pattern: Synthesized<T>, target: unknown) {
+export function search<N extends ValidationNode>(pattern: Synthesized<N>, target: unknown) {
     const results = paths(pattern, target);
 
-    return results.map((route) => get<GetNodeType<T>>(target, route));
+    return results.map((route) => retreive<GetNodeType<N>>(target, route));
 }

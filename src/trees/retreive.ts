@@ -1,4 +1,4 @@
-export function get<T>(target: unknown, path: string[]): T {
+export function retreive<T>(target: unknown, path: string[]): T {
     return path.reduce(
         (result, key) =>
             (result && typeof result === "object"
