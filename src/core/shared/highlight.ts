@@ -39,7 +39,7 @@ export function highlight(
             green: [TokenType.StringLiteral, TokenType.SourceStringLiteral],
         };
 
-        for (const key in customColors) {
+        for (const key of Object.keys(customColors)) {
             colors[key as keyof typeof colors] = (colors[key as keyof typeof colors] ?? []).concat(
                 ...customColors[key as keyof typeof customColors]!,
             );

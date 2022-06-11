@@ -1,12 +1,12 @@
+import type { Narrow } from "../../types.js";
 import type { CallExpr } from "../base/expr.js";
 import type { ValidationNode } from "../providers/node.js";
 import { Lint, LintSeverity } from "../tools/linter.js";
-import type { Narrow } from "../../types.js";
 
 function mergeWithDefaults<T>(provided: Partial<T>, defaults: T) {
     const out = Object.assign({}, defaults);
 
-    for (const key in provided) Reflect.set(out, key, provided[key as keyof typeof provided]);
+    for (const key of Object.keys(provided)) Reflect.set(out, key, provided[key as keyof typeof provided]);
 
     return out;
 }
