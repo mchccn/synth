@@ -1,10 +1,11 @@
 import arg from "arg";
-import { writeFile } from "fs/promises";
+import { stat, writeFile } from "fs/promises";
 import { join } from "path";
 import { root } from "../root.js";
 import { allFiles } from "./files.js";
 import { generate } from "./generate.js";
 import { help } from "./help.js";
+import { minify } from "./minify.js";
 
 export default async () => {
     process.env.SYNTH_CLI_EXECUTING = "true";
@@ -16,6 +17,7 @@ export default async () => {
             "--clear": false,
             "--show": false,
             "--print": false,
+            "--minify": false,
         },
         arg({
             "--help": Boolean,
@@ -23,12 +25,14 @@ export default async () => {
             "--clear": Boolean,
             "--show": Boolean,
             "--print": Boolean,
+            "--minify": Boolean,
 
             "-h": "--help",
             "-e": "--extension",
             "-c": "--clear",
             "-s": "--show",
             "-p": "--print",
+            "-m": "--minify",
         }),
     );
 
@@ -39,8 +43,11 @@ export default async () => {
         return;
     }
 
+    if (args["--minify"]) args["--print"] = true;
+
     if (args["--show"]) process.env.SYNTH_SHOW_LINTS = "true";
     if (args["--print"]) process.env.SYNTH_PRINT_ONLY = "true";
+    if (args["--minify"]) process.env.SYNTH_MINIFY = "true";
 
     if (!args._.length || args["--help"]) return console.log(help);
 
@@ -49,7 +56,9 @@ export default async () => {
 
         console.log("📁 Retrieving all files...");
 
-        const paths = await allFiles(join(process.cwd(), args._[0]), { ext: args["--extension"] });
+        const paths = (await stat(join(process.cwd(), args._[0]))).isDirectory()
+            ? await allFiles(join(process.cwd(), args._[0]), { ext: args["--extension"] })
+            : [join(process.cwd(), args._[0])];
 
         console.log("🔄 Generating JavaScript and type declarations...");
 
@@ -66,10 +75,18 @@ export default async () => {
 
         console.log(`⚡︎ Done in ${Date.now() - start}ms!`);
     } else {
-        const paths = await allFiles(join(process.cwd(), args._[0]), { ext: args["--extension"] });
+        const paths = (await stat(join(process.cwd(), args._[0]))).isDirectory()
+            ? await allFiles(join(process.cwd(), args._[0]), { ext: args["--extension"] })
+            : [join(process.cwd(), args._[0])];
 
-        const [out] = await generate(paths);
+        if (!process.env.SYNTH_MINIFY) {
+            const [out] = await generate(paths);
 
-        console.log(out);
+            console.log(out);
+        } else {
+            const out = await minify(paths);
+
+            console.log(out);
+        }
     }
 };

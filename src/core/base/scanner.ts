@@ -60,8 +60,6 @@ export class Scanner {
 
         ["-", () => this.#addToken(TokenType.Minus)],
 
-        ["*", () => this.#addToken(TokenType.Star)],
-
         ['"', () => this.#string('"')],
         ["'", () => this.#string("'")],
 

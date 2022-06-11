@@ -1,6 +1,7 @@
 import { Parser } from "./base/parser.js";
 import { Scanner } from "./base/scanner.js";
 import type { ValidationNode } from "./providers/node.js";
+import { compress } from "./shared/compress.js";
 import { Generator } from "./tools/generator.js";
 import { Linter } from "./tools/linter.js";
 import { Resolver } from "./tools/resolver.js";
@@ -39,6 +40,10 @@ export function synthesize(template: TemplateStringsArray | string, ...values: u
 
     const tokens = new Scanner(source).scanTokens();
 
+    const key = compress(tokens);
+
+    if (synthesizedCache.has(key)) return synthesizedCache.get(key)!;
+
     const expr = new Parser(source, tokens).parseTokens();
 
     const resolved = new Resolver().resolve(source, expr);
@@ -49,7 +54,7 @@ export function synthesize(template: TemplateStringsArray | string, ...values: u
 
     const s = new Synthesized(node);
 
-    // synthesizedCache.set(source.trim(), s);
+    synthesizedCache.set(key, s);
 
     return Object.assign(s, {
         lint(config?: Parameters<typeof Linter.display>[2]) {

@@ -26,9 +26,6 @@ export enum TokenType {
     // Subtract numbers, negation operator
     Minus,
 
-    // Multiply numbers, any type or loose matching
-    Star,
-
     // Boolean literals
     True,
     False,

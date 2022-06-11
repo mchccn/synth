@@ -25,7 +25,6 @@ export function highlight(
             gray: [
                 TokenType.QuestionMark,
                 TokenType.Minus,
-                TokenType.Star,
                 TokenType.Semicolon,
                 TokenType.Colon,
                 TokenType.LeftBracket,
