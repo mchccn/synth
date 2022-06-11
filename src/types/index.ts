@@ -5,6 +5,7 @@ export * from "./boolean.js";
 export * from "./function.js";
 export * from "./literal.js";
 export * from "./null.js";
+export * from "./number.js";
 export * from "./object.js";
 export * from "./string.js";
 export * from "./symbol.js";
