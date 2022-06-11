@@ -2,6 +2,7 @@ import { Parser } from "./base/parser.js";
 import { Scanner } from "./base/scanner.js";
 import type { ValidationNode } from "./providers/node.js";
 import { compress } from "./shared/compress.js";
+import { synthesizedCheckKey, synthesizedModuleKey } from "./shared/constants.js";
 import { Generator } from "./tools/generator.js";
 import { Linter } from "./tools/linter.js";
 import { Resolver } from "./tools/resolver.js";
@@ -13,7 +14,11 @@ export class Synthesized<Matcher extends ValidationNode = ValidationNode> {
         this.#module = module;
     }
 
-    #check(value: unknown) {
+    get [Symbol.for(synthesizedModuleKey)]() {
+        return this.#module;
+    }
+
+    [Symbol.for(synthesizedCheckKey)](value: unknown) {
         return this.#module.check(value);
     }
 }

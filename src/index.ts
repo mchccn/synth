@@ -9,5 +9,7 @@ export * from "./matches/index.js";
 export * as matches from "./matches/index.js";
 export * from "./overloads/index.js";
 export * as overloads from "./overloads/index.js";
+export * from "./trees/index.js";
+export * as trees from "./trees/index.js";
 export * from "./types/index.js";
 export * as types from "./types/index.js";

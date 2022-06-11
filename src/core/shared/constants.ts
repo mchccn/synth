@@ -21,3 +21,7 @@ export const baseProviders = [
     "null",
     "undefined",
 ];
+
+export const synthesizedCheckKey = "Synthesized.#module.check";
+
+export const synthesizedModuleKey = "Synthesized.#module";

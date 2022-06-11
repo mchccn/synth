@@ -1,4 +1,5 @@
 import { TupleNode } from "../core/providers/tuple.js";
+import { synthesizedModuleKey } from "../core/shared/constants.js";
 import { Synthesized } from "../core/synthesize.js";
 import type { GetNodeType, Narrow } from "../core/types.js";
 import { is } from "../guards/is.js";
@@ -14,7 +15,7 @@ export function overload() {
             ) => unknown,
         >(signature: Narrow<S>, executor: E): OverloadedFunction<Result & { (...args: Parameters<E>): ReturnType<E> }> {
             this.#signatures.push([
-                new Synthesized(new TupleNode(signature.map((s) => Reflect.get(s, "module")))),
+                new Synthesized(new TupleNode(signature.map((s) => Reflect.get(s, Symbol.for(synthesizedModuleKey))))),
                 executor,
             ]);
 
