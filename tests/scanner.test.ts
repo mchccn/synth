@@ -6,7 +6,7 @@ describe("Synthesizer scanner", () => {
         const tokens = new Scanner(`\
 ( ) [ ] { }
 
-: ; , ? * -
+: ; , ? -
 
 true false
 
@@ -38,7 +38,6 @@ object undefined null
             "Semicolon",
             "Comma",
             "QuestionMark",
-            "Star",
             "Minus",
             "True",
             "False",
