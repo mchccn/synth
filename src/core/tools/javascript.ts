@@ -1,3 +1,4 @@
+import { registeredGenerators } from "../../plugin/registered.js";
 import {
     ArrayExpr,
     CallExpr,
@@ -12,9 +13,11 @@ import {
 } from "../base/expr.js";
 import { TokenType } from "../base/tokentype.js";
 import type { createBaseProvider, createProviderExtension } from "../generators/generators.js";
-import * as generators from "../generators/index.js";
+import * as builtinGenerators from "../generators/index.js";
 
 export class JSGenerator implements ExprVisitor<string> {
+    #generators = Object.assign(builtinGenerators, registeredGenerators);
+
     constructor(/* more shit here */) {}
 
     generate(expr: Expr) {
@@ -26,7 +29,7 @@ export class JSGenerator implements ExprVisitor<string> {
     }
 
     visitCallExpr(expr: CallExpr): string {
-        const generator = generators[expr.identifier.lexeme as keyof typeof generators];
+        const generator = this.#generators[expr.identifier.lexeme];
 
         if (generator.isModifier)
             throw new Error(`Synthesizer should not have to generate a node for a single call expression.`);
@@ -38,8 +41,8 @@ export class JSGenerator implements ExprVisitor<string> {
 
     visitLiteralExpr(expr: LiteralExpr): string {
         if (expr.value instanceof RegExp)
-            return generators.string.compile({ boxed: true }, [
-                generators.regex.compile({
+            return this.#generators.string.compile({ boxed: true }, [
+                this.#generators.regex.compile({
                     pattern: expr.value.source,
                     flags: "",
                 }),
@@ -65,21 +68,15 @@ export class JSGenerator implements ExprVisitor<string> {
             // ...
         });
 
-        const index = validators.findIndex(
-            (v) => !generators[v.identifier.lexeme as keyof typeof generators].isModifier,
-        )!;
+        const index = validators.findIndex((v) => !this.#generators[v.identifier.lexeme].isModifier)!;
 
         // Isolate provider and generate it first
         const [provider] = validators.splice(index, 1);
 
-        const node = (generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<
-            typeof createBaseProvider
-        >).compile(
+        const node = (this.#generators[provider.identifier.lexeme] as ReturnType<typeof createBaseProvider>).compile(
             Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
             validators.map((v) =>
-                (generators[v.identifier.lexeme as keyof typeof generators] as ReturnType<
-                    typeof createProviderExtension
-                >).compile(
+                (this.#generators[v.identifier.lexeme] as ReturnType<typeof createProviderExtension>).compile(
                     Object.fromEntries([...v.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
                 ),
             ),

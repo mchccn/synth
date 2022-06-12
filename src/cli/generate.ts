@@ -1,11 +1,15 @@
 import { readFile } from "fs/promises";
 import { sep } from "path";
-import * as providers from "../core/providers/index.js";
-import * as validators from "../core/validators/index.js";
+import { registeredProviders, registeredValidators } from "src/plugin/registered.js";
+import * as builtinProviders from "../core/providers/index.js";
+import * as builtinValidators from "../core/validators/index.js";
 import { compile } from "./compile.js";
 import { pkg } from "./package.js";
 
 export async function generate(paths: string[]): Promise<[js: string, ts: string]> {
+    const providers = Object.assign(builtinProviders, registeredProviders);
+    const validators = Object.assign(builtinValidators, registeredValidators);
+
     const sources = await Promise.all(
         paths.map(async (path) => {
             const source = await readFile(path, "utf8");

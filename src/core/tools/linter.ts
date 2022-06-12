@@ -1,6 +1,5 @@
-// lints parsed expression and warns about possible mistakes
-
 import chalk from "chalk";
+import { registeredGenerators } from "../..//plugin/registered.js";
 import {
     ArrayExpr,
     CallExpr,
@@ -15,7 +14,7 @@ import {
 } from "../base/expr.js";
 import type { Token } from "../base/token.js";
 import { TokenType } from "../base/tokentype.js";
-import * as generators from "../generators/index.js";
+import * as builtinGenerators from "../generators/index.js";
 import { baseProviders } from "../shared/constants.js";
 import { highlight } from "../shared/highlight.js";
 import { didYouMean, oneOfTheThingsIn } from "../shared/utils.js";
@@ -38,6 +37,8 @@ export class Lint {
 }
 
 export class Linter implements ExprVisitor<Lint[]> {
+    #generators = Object.assign(builtinGenerators, registeredGenerators);
+
     #beforeVisit(expr: Expr, exec: () => Lint[]) {
         if (expr.copied) return [];
 
@@ -177,7 +178,7 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
             const lints = [] as Lint[];
 
             // Lint call with data from the generators
-            const generator = generators[expr.identifier.lexeme as keyof typeof generators];
+            const generator = this.#generators[expr.identifier.lexeme];
 
             [...expr.args.entries()].forEach(([key, arg]) => {
                 if (!(key.lexeme in generator.defaultAndExpectedArgs))
@@ -280,7 +281,7 @@ ${chalk.dim(`${"─".repeat(Math.floor(Math.log10(Math.max(...numbers)) + 1) + 1
             else
                 expr.expr.forEach((e) => {
                     if (e instanceof CallExpr) {
-                        const generator = generators[e.identifier.lexeme as keyof typeof generators];
+                        const generator = this.#generators[e.identifier.lexeme];
 
                         if (!baseProviders.includes(e.identifier.lexeme)) {
                             if (

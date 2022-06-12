@@ -1,4 +1,4 @@
-import { Constraint } from "./constraint.js";
+import { NodeConstraint } from "./constraint.js";
 
 export interface MaxConstraintArgs {
     length: number;
@@ -6,7 +6,7 @@ export interface MaxConstraintArgs {
     exclusive: boolean;
 }
 
-export class MaxConstraint extends Constraint<number | string> {
+export class MaxConstraint extends NodeConstraint<number | string> {
     constructor(readonly args: MaxConstraintArgs) {
         super();
     }

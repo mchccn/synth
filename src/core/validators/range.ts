@@ -1,4 +1,4 @@
-import { Constraint } from "./constraint.js";
+import { NodeConstraint } from "./constraint.js";
 
 export interface RangeConstraintArgs {
     start: number;
@@ -6,7 +6,7 @@ export interface RangeConstraintArgs {
     exclusive: boolean;
 }
 
-export class RangeConstraint extends Constraint<number> {
+export class RangeConstraint extends NodeConstraint<number> {
     constructor(readonly args: RangeConstraintArgs) {
         super();
     }

@@ -1,10 +1,10 @@
 import type { SynthesizerValidator } from "../synthesize";
-import type { Constraint } from "../validators/constraint.js";
+import type { NodeConstraint } from "../validators/constraint.js";
 
 export abstract class ValidationNode<Type = unknown> implements SynthesizerValidator {
     #_: Type = null!;
 
-    protected constraints = [] as Constraint<Type>[];
+    protected constraints = [] as NodeConstraint<Type>[];
 
     readonly isConstraint = false;
 
@@ -12,7 +12,7 @@ export abstract class ValidationNode<Type = unknown> implements SynthesizerValid
 
     abstract check(value: unknown): boolean;
 
-    constraint(constraint: Constraint<Type>) {
+    constraint(constraint: NodeConstraint<Type>) {
         this.constraints.push(constraint);
 
         return this;

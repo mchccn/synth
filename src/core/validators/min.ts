@@ -1,4 +1,4 @@
-import { Constraint } from "./constraint.js";
+import { NodeConstraint } from "./constraint.js";
 
 export interface MinConstraintArgs {
     length: number;
@@ -6,7 +6,7 @@ export interface MinConstraintArgs {
     exclusive: boolean;
 }
 
-export class MinConstraint extends Constraint<number | string> {
+export class MinConstraint extends NodeConstraint<number | string> {
     constructor(readonly args: MinConstraintArgs) {
         super();
     }

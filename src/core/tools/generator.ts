@@ -1,3 +1,4 @@
+import { registeredGenerators } from "../../plugin/registered.js";
 import {
     ArrayExpr,
     CallExpr,
@@ -12,7 +13,7 @@ import {
 } from "../base/expr.js";
 import { TokenType } from "../base/tokentype.js";
 import type { createBaseProvider, createProviderExtension } from "../generators/generators.js";
-import * as generators from "../generators/index.js";
+import * as builtinGenerators from "../generators/index.js";
 import { ArrayNode } from "../providers/array.js";
 import { LiteralNode } from "../providers/literal.js";
 import type { ValidationNode } from "../providers/node.js";
@@ -21,6 +22,8 @@ import { StringNode } from "../providers/string.js";
 import { TupleNode } from "../providers/tuple.js";
 
 export class Generator implements ExprVisitor<ValidationNode> {
+    #generators = Object.assign(builtinGenerators, registeredGenerators);
+
     constructor(/* more shit here */) {}
 
     generate(expr: Expr) {
@@ -32,7 +35,7 @@ export class Generator implements ExprVisitor<ValidationNode> {
     }
 
     visitCallExpr(expr: CallExpr): ValidationNode {
-        const generator = generators[expr.identifier.lexeme as keyof typeof generators];
+        const generator = this.#generators[expr.identifier.lexeme];
 
         if (generator.isModifier)
             throw new Error(`Synthesizer should not have to generate a node for a single call expression.`);
@@ -44,7 +47,7 @@ export class Generator implements ExprVisitor<ValidationNode> {
 
     visitLiteralExpr(expr: LiteralExpr): ValidationNode {
         if (expr.value instanceof RegExp)
-            return generators.regex(new StringNode(true), {
+            return this.#generators.regex(new StringNode(true), {
                 pattern: expr.value.source,
                 flags: "",
             });
@@ -69,19 +72,17 @@ export class Generator implements ExprVisitor<ValidationNode> {
             // ...
         });
 
-        const index = validators.findIndex(
-            (v) => !generators[v.identifier.lexeme as keyof typeof generators].isModifier,
-        )!;
+        const index = validators.findIndex((v) => !this.#generators[v.identifier.lexeme].isModifier)!;
 
         // Isolate provider and generate it first
         const [provider] = validators.splice(index, 1);
 
-        const node = (generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<
-            typeof createBaseProvider
-        >)(Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any);
+        const node = (this.#generators[provider.identifier.lexeme] as ReturnType<typeof createBaseProvider>)(
+            Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
+        );
 
         validators.forEach((v) => {
-            (generators[v.identifier.lexeme as keyof typeof generators] as ReturnType<typeof createProviderExtension>)(
+            (this.#generators[v.identifier.lexeme] as ReturnType<typeof createProviderExtension>)(
                 node,
                 Object.fromEntries([...v.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
             );

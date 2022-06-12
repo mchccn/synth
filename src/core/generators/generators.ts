@@ -4,7 +4,7 @@ import type { ValidationNode } from "../providers/node.js";
 import { mergeWithDefaults } from "../shared/utils.js";
 import { Lint, LintSeverity } from "../tools/linter.js";
 
-export function createBaseProvider<T>({
+export function createBaseProvider<T extends object>({
     identifier,
     defaultAndExpectedArgs,
     executor,
@@ -34,7 +34,7 @@ export function createBaseProvider<T>({
     } as const);
 }
 
-export function createProviderExtension<T, P extends string>({
+export function createProviderExtension<T extends object, P extends string>({
     defaultAndExpectedArgs,
     executor,
     compile,

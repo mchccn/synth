@@ -1,3 +1,4 @@
+import { registeredGenerators } from "src/plugin/registered.js";
 import {
     ArrayExpr,
     CallExpr,
@@ -12,10 +13,11 @@ import {
 } from "../base/expr.js";
 import { TokenType } from "../base/tokentype.js";
 import type { createBaseProvider } from "../generators/generators.js";
-import * as generators from "../generators/index.js";
+import * as builtinGenerators from "../generators/index.js";
 
-// ...
 export class TSGenerator implements ExprVisitor<string> {
+    #generators = Object.assign(builtinGenerators, registeredGenerators);
+
     constructor(/* more shit here */) {}
 
     generate(expr: Expr) {
@@ -27,7 +29,7 @@ export class TSGenerator implements ExprVisitor<string> {
     }
 
     visitCallExpr(expr: CallExpr): string {
-        const generator = generators[expr.identifier.lexeme as keyof typeof generators];
+        const generator = this.#generators[expr.identifier.lexeme];
 
         if (generator.isModifier)
             throw new Error(`Synthesizer should not have to generate a node for a single call expression.`);
@@ -38,7 +40,7 @@ export class TSGenerator implements ExprVisitor<string> {
     }
 
     visitLiteralExpr(expr: LiteralExpr): string {
-        if (expr.value instanceof RegExp) return generators.string.types({ boxed: true });
+        if (expr.value instanceof RegExp) return this.#generators.string.types({ boxed: true });
 
         return `LiteralNode<${typeof expr.value === "undefined" ? "undefined" : JSON.stringify(expr.value)}>`;
     }
@@ -61,13 +63,11 @@ export class TSGenerator implements ExprVisitor<string> {
         });
 
         // Only need the provider
-        const provider = validators.find(
-            (v) => !generators[v.identifier.lexeme as keyof typeof generators].isModifier,
-        )!!;
+        const provider = validators.find((v) => !this.#generators[v.identifier.lexeme].isModifier)!!;
 
-        return (generators[provider.identifier.lexeme as keyof typeof generators] as ReturnType<
-            typeof createBaseProvider
-        >).types(Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any);
+        return (this.#generators[provider.identifier.lexeme] as ReturnType<typeof createBaseProvider>).types(
+            Object.fromEntries([...provider.raw.entries()].map(([k, v]) => [k, (v as LiteralExpr).value])) as any,
+        );
     }
 
     visitObjectExpr(expr: ObjectExpr): string {
