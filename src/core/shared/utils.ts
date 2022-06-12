@@ -30,3 +30,11 @@ export function oneOfTheThingsIn(list: readonly string[]) {
         .map((item) => `'${item}'`)
         .join(", ")} or '${list[list.length - 1]}'`;
 }
+
+export function mergeWithDefaults<T>(provided: Partial<T>, defaults: T) {
+    const out = Object.assign({}, defaults);
+
+    for (const key of Object.keys(provided)) Reflect.set(out, key, provided[key as keyof typeof provided]);
+
+    return out;
+}

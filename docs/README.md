@@ -110,4 +110,39 @@ However, in the function body, you still have to manually differentiate between 
 This can be troublesome and quickly reduce the readabliity of the function.
 Wouldn't it be nice if we could do it like Java or C++?
 
+Let's see how we do it with Synth:
+
+```ts
+import { types, define } from "@kelsny/synth";
+
+// 'types' are a handful of already precompiled basic types,
+// like numbers and strings, so you don't have to
+// compile them yourself
+const overloaded = define()
+    .signature([types.number, types.number], (a, b) => `Sum: ${a + b}`)
+    .signature([types.string, types.string], (a, b) => `Joined: ${a + b}`)
+    .finalize(); // done with our signatures, create the function now
+
+console.log(overloaded(10, 32)); // => `Sum: 42`
+console.log(overloaded("10", "32")); // => `Joined: 1032`
+```
+
 ### Fluent matching of values like Rust
+
+This library is not as fluent as [ts-match](), but it still comes with a utility to help you with matching values.
+Test the desired value against some cases, and optionally have a fall-through default case.
+Value matching will likely be improved on in the future.
+
+Anyways, here's how it is currently in Synth:
+
+```ts
+import { types, match } from "@kelsny/synth";
+
+// ...
+
+// Supposedly getting the number of digits in a number
+const result = match({ throwIfNoMatch: true })
+    .case(types.string, (str) => str.length)
+    .case(types.number, (num) => Math.floor(Math.log10(num)) + 1)
+    .test(value);
+```
