@@ -8,7 +8,7 @@ For example, it can do all of the following quite nicely:
 
 -   ✅ Generate type guards
 -   ✅ Manipulate tree-like data
--   ✅ Handle overloading like Java and C/C++
+-   ✅ Handle overloading like Java and C++
 -   ✅ Fluent matching of values like Rust
 
 Like the sound of it already? Go ahead and add it now:

@@ -71,6 +71,43 @@ if (is(ServerError, value)) {
 
 ### Manipulate tree-like data
 
-### Handle overloading like Java and C/C++
+Originally, this tool was only going to be a TSurgeon and TRegex library for JavaScript, but I found many more applications other than just tree data structure manipulation.
+You can find, search, replace, or remove anything you want in the tree.
+And because in JavaScript, a plain old object is already a tree, it works quite nicely.
+
+Let's precompile this type (`BinaryExpression.synth`):
+
+```ts
+{
+    type: string;
+    lhs: {
+        type: "CONSTANT";
+        value: number;
+    }
+    rhs: {
+        type: "CONSTANT";
+        value: number;
+    }
+}
+```
+
+Assuming that our AST for some language has this kind of representation, we can then find all the constant expressions in our tree:
+
+```ts
+import { find, BinaryExpression } from "@kelsny/synth";
+
+// By default it is depth-first search
+const found = find(BinaryExpression, ast);
+
+// Synth found all the children that match the type 'BinaryExpression'
+console.log(found);
+```
+
+### Handle overloading like Java and C++
+
+Because we've got types in TypeScript, you can define overloaded functions with multiple signatures.
+However, in the function body, you still have to manually differentiate between all the overloads.
+This can be troublesome and quickly reduce the readabliity of the function.
+Wouldn't it be nice if we could do it like Java or C++?
 
 ### Fluent matching of values like Rust

@@ -1,0 +1,4 @@
+{
+    code: number;
+    message: string;
+}
