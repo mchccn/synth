@@ -32,9 +32,6 @@ export class Scanner {
 
     // Maps keywords to their token type
     static readonly #keywords = new Map([
-        // ["not", TokenType.Not],
-        // ["or", TokenType.Or],
-        // ["and", TokenType.And],
         ["true", TokenType.True],
         ["false", TokenType.False],
     ]);
