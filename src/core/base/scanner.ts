@@ -232,7 +232,7 @@ export class Scanner {
         if (Number.isNaN(token.literal)) throw new Error("Number literal resulted in NaN.");
     }
 
-    #symbol(start?: string) {
+    #symbol(start: string) {
         // If this was marked as a possible special string literal, then check if it's actually one
         if ((start === "r" || start === "s") && (this.#peek() === '"' || this.#peek() === "'"))
             return this.#string(

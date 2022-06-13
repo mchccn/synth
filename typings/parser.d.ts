@@ -20,40 +20,93 @@ type StringLength<T extends string> = Split<T>["length"];
 
 type Increment<N extends UnknownArray> = [...N, unknown];
 
+type DecimalDigit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+
+type LowercaseAlphabet =
+    | "a"
+    | "b"
+    | "c"
+    | "d"
+    | "e"
+    | "f"
+    | "g"
+    | "h"
+    | "i"
+    | "j"
+    | "k"
+    | "l"
+    | "m"
+    | "n"
+    | "o"
+    | "p"
+    | "q"
+    | "r"
+    | "s"
+    | "t"
+    | "u"
+    | "v"
+    | "w"
+    | "x"
+    | "y"
+    | "z";
+
+type UppercaseAlphabet =
+    | "A"
+    | "B"
+    | "C"
+    | "D"
+    | "E"
+    | "F"
+    | "G"
+    | "H"
+    | "I"
+    | "J"
+    | "K"
+    | "L"
+    | "M"
+    | "N"
+    | "O"
+    | "P"
+    | "Q"
+    | "R"
+    | "S"
+    | "T"
+    | "U"
+    | "V"
+    | "W"
+    | "X"
+    | "Y"
+    | "Z";
+
 // Simple Definitions
 
-type TokenType<T extends string> = `tokentype${T}`;
+type Token<Type extends TokenType = TokenType, Lexeme extends string = string> = { type: Type; lexeme: Lexeme };
 
-type Token<Type extends string = string, Lexeme extends string = string> = Extract<
-    | { lexeme: string; type: TokenType<"leftparen"> }
-    | { lexeme: string; type: TokenType<"rightparen"> }
-    | { lexeme: string; type: TokenType<"leftbrace"> }
-    | { lexeme: string; type: TokenType<"rightbrace"> }
-    | { lexeme: string; type: TokenType<"leftbracket"> }
-    | { lexeme: string; type: TokenType<"rightbracket"> }
-    | { lexeme: string; type: TokenType<"colon"> }
-    | { lexeme: string; type: TokenType<"semicolon"> }
-    | { lexeme: string; type: TokenType<"comma"> }
-    | { lexeme: string; type: TokenType<"questionmark"> }
-    | { lexeme: string; type: TokenType<"minus"> }
-    | { lexeme: string; type: TokenType<"true"> }
-    | { lexeme: string; type: TokenType<"false"> }
-    | { lexeme: string; type: TokenType<"stringliteral"> }
-    | { lexeme: string; type: TokenType<"regexstringliteral"> }
-    | { lexeme: string; type: TokenType<"sourcestringliteral"> }
-    | { lexeme: string; type: TokenType<"numberliteral"> }
-    | { lexeme: string; type: TokenType<"identifier"> }
-    | { lexeme: string; type: TokenType<"comment"> }
-    | { lexeme: string; type: TokenType<"eof"> }
-    | { type: TokenType<"marker"> },
-    { type: Type }
-> & { lexeme: Lexeme };
+type TokenType =
+    | "leftparen"
+    | "rightparen"
+    | "leftbrace"
+    | "rightbrace"
+    | "leftbracket"
+    | "rightbracket"
+    | "colon"
+    | "semicolon"
+    | "comma"
+    | "questionmark"
+    | "minus"
+    | "true"
+    | "false"
+    | "stringliteral"
+    | "regexstringliteral"
+    | "sourcestringliteral"
+    | "numberliteral"
+    | "identifier";
 
 // Mappings
 
 type ScannerKeywords = {
-    true: TokenType<"true">;
-    false: TokenType<"false">;
+    true: "true";
+    false: "false";
 };
 
 type ScannerDigitsForBase = {
@@ -82,9 +135,6 @@ type ScannerDigitsForBase = {
         | "D"
         | "E"
         | "F";
-} & {
-    // Defaults to decimal
-    [key: string]: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 };
 
 // Actual parsing shit
@@ -97,36 +147,34 @@ type ScanTokens<Source extends string, Tokens extends Token[] = []> = Source ext
       Character extends " " | "\r" | "\t" | "\v" | "\f" | "\n"
         ? ScanTokens<RestOfSource, Tokens>
         : Character extends "("
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"leftparen">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"leftparen", Character>]>
         : Character extends ")"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"rightparen">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"rightparen", Character>]>
         : Character extends "["
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"leftbrace">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"leftbrace", Character>]>
         : Character extends "]"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"rightbrace">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"rightbrace", Character>]>
         : Character extends "{"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"leftbracket">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"leftbracket", Character>]>
         : Character extends "}"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"rightbracket">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"rightbracket", Character>]>
         : Character extends ":"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"colon">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"colon", Character>]>
         : Character extends ";"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"semicolon">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"semicolon", Character>]>
         : Character extends ","
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"comma">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"comma", Character>]>
         : Character extends "?"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"questionmark">>]>
+        ? ScanTokens<RestOfSource, [...Tokens, Token<"questionmark", Character>]>
         : Character extends "-"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<TokenType<"minus">>]>
+        ? RestOfSource extends `${infer MightBeDigit}${infer NextRestOfSource}`
+            ? IsDigit<MightBeDigit> extends true
+                ? "NOT IMPLEMENTED" // XXX: Make this work
+                : ScanTokens<RestOfSource, [...Tokens, Token<"minus">]>
+            : ScanTokens<RestOfSource, [...Tokens, Token<"minus">]>
         : Character extends '"' | "'"
-        ? ExtractString<RestOfSource, Character, TokenType<"stringliteral">> extends [
-              infer NewRestOfSource,
-              infer ExtractedString,
-          ]
-            ? ScanTokens<
-                  NewRestOfSource & string,
-                  [...Tokens, Token<TokenType<"stringliteral">, ExtractedString & string>]
-              >
+        ? ExtractString<RestOfSource, Character, "stringliteral"> extends [infer NewRestOfSource, infer ExtractedString]
+            ? ScanTokens<NewRestOfSource & string, [...Tokens, Token<"stringliteral", ExtractedString & string>]>
             : never
         : Character extends "#"
         ? // Skip the comment and get new Source and Current values
@@ -135,30 +183,32 @@ type ScanTokens<Source extends string, Tokens extends Token[] = []> = Source ext
             : never
         : // Past the lexmap now
         IsDigit<Character> extends true
-        ? RestOfSource extends `${infer NumericBase}${infer RestOfSource}`
+        ? RestOfSource extends `${infer NumericBase}${infer NextRestOfSource}`
             ? NumericBase extends keyof ScannerDigitsForBase // Is the base even valid
                 ? Character extends "0" // Only 0 can be the first character of a number literal with a base
-                    ? ExtractNumber<RestOfSource, ScannerDigitsForBase[NumericBase]> extends [
+                    ? ExtractNumber<NextRestOfSource, ScannerDigitsForBase[NumericBase]> extends [
                           infer NewRestOfSource,
                           infer ExtractedNumber,
                       ]
                         ? ScanTokens<
                               NewRestOfSource & string,
-                              [...Tokens, Token<TokenType<"numberliteral">, ExtractedNumber & string>]
+                              [...Tokens, Token<"numberliteral", `0${NumericBase}${ExtractedNumber & string}`>]
                           >
                         : never
                     : never
+                : ExtractNumber<Source, DecimalDigit> extends [infer NewRestOfSource, infer ExtractedNumber]
+                ? ScanTokens<NewRestOfSource & string, [...Tokens, Token<"numberliteral", ExtractedNumber & string>]>
                 : never
-            : ExtractNumber<RestOfSource, ScannerDigitsForBase[string]> extends [
-                  infer NewRestOfSource,
-                  infer ExtractedNumber,
-              ]
-            ? ScanTokens<
-                  NewRestOfSource & string,
-                  [...Tokens, Token<TokenType<"numberliteral">, ExtractedNumber & string>]
-              >
+            : ExtractNumber<Source, DecimalDigit> extends [infer NewRestOfSource, infer ExtractedNumber]
+            ? ScanTokens<NewRestOfSource & string, [...Tokens, Token<"numberliteral", ExtractedNumber & string>]>
             : never
-        : never // Continue implementing (src/core/base/scanner.ts line 83) ...
+        : IsIdentifierStart<Character> extends true
+        ? ExtractIdentifier<RestOfSource, Character> extends [infer NewRestOfSource, infer ExtractedToken]
+            ? ExtractedToken extends Token
+                ? ScanTokens<NewRestOfSource & string, [...Tokens, ExtractedToken]>
+                : never
+            : never
+        : never
     : never; // Should never happen because we check if Current is past the Source length
 
 type SkipComments<Source extends string> = Source extends ""
@@ -188,20 +238,97 @@ type ExtractString<
 type ExtractNumber<
     Source extends string,
     AllowedDigits extends string,
+    ExpectingDot extends boolean = true,
+    ExpectingE extends boolean = true,
     LastChar extends string = "",
     ResultingNumber extends string = "",
-> = 0;
+> = Source extends ""
+    ? never
+    : Source extends `${infer Next}${infer RestOfSource}`
+    ? Next extends AllowedDigits | "_"
+        ? Next extends "_"
+            ? LastChar extends "e" | "."
+                ? never
+                : ExtractNumber<
+                      RestOfSource,
+                      AllowedDigits,
+                      ExpectingDot,
+                      ExpectingE,
+                      Next,
+                      `${ResultingNumber}${Next}`
+                  >
+            : ExtractNumber<RestOfSource, AllowedDigits, ExpectingDot, ExpectingE, Next, `${ResultingNumber}${Next}`>
+        : Next extends "."
+        ? ExpectingDot extends false
+            ? never
+            : LastChar extends "_"
+            ? never
+            : ExtractNumber<RestOfSource, AllowedDigits, false, ExpectingE, Next, `${ResultingNumber}.`>
+        : Next extends "e"
+        ? ExpectingE extends false
+            ? never
+            : LastChar extends "_"
+            ? never
+            : ExtractNumber<RestOfSource, AllowedDigits, true, false, Next, `${ResultingNumber}e`>
+        : [Source, ResultingNumber]
+    : never; // Should never happen because we check if Source is empty
 
-type IsDigit<Character extends string> = Character extends "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+type ExtractIdentifier<Source extends string, Start extends string> = Start extends "r" | "s"
+    ? Source extends `${infer MaybeQuote}${string}`
+        ? MaybeQuote extends "'" | '"'
+            ? ExtractString<Source, MaybeQuote, Start extends "r" ? "regexstringliteral" : "sourcestringliteral">
+            : ExtractIdentifierBody<Source, Start>
+        : ExtractIdentifierBody<Source, Start>
+    : ExtractIdentifierBody<Source, Start>;
+
+type ExtractIdentifierBody<
+    Source extends string,
+    Start extends string,
+    ResultingBody extends string = "",
+> = Source extends `${infer Character}${infer RestOfSource}`
+    ? IsIdentifierBody<Character> extends true
+        ? ExtractIdentifierBody<RestOfSource, Start, `${ResultingBody}${Character}`>
+        : `${Start}${ResultingBody}` extends keyof ScannerKeywords
+        ? [Source, Token<ScannerKeywords[`${Start}${ResultingBody}`]>]
+        : [Source, Token<"identifier", `${Start}${ResultingBody}`>]
+    : never;
+
+type IsDigit<Character extends string> = Character extends DecimalDigit ? true : false;
+
+type IsIdentifierStart<Character extends string> = Character extends LowercaseAlphabet | UppercaseAlphabet | "_" | "$"
+    ? true
+    : false;
+
+type IsIdentifierBody<Character extends string> = Character extends
+    | LowercaseAlphabet
+    | UppercaseAlphabet
+    | DecimalDigit
+    | "_"
+    | "$"
     ? true
     : false;
 
 // Debugging
 
 type OnlyTokenTypes<T> = {
-    [K in keyof T]: T[K] extends Token<infer Type> ? (Type extends TokenType<infer S> ? S : never) : T[K];
+    [K in keyof T]: T[K] extends Token<infer Type> ? Type : T[K];
 };
 
 type T01 = OnlyTokenTypes<ScanTokens<`()[]{}:;,?- "" # o k`>>;
 
 type T02 = ScanTokens<`( 'i\\'m kelly' )`>;
+
+// Make negative numbers work later
+type T03 = ScanTokens<`( 42e123.14 ABC true )`>;
+
+type T04 = ScanTokens<`{
+    type: string;
+    lhs: {
+        type: "CONSTANT";
+        value: number;
+    };
+    rhs: {
+        type: "CONSTANT";
+        value: number;
+    };
+}`>;
