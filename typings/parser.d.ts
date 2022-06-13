@@ -137,15 +137,48 @@ type ScannerDigitsForBase = {
         | "F";
 };
 
-// Actual parsing shit
+// Actual scanning shit
 
-type ScanTokens<Source extends string, Tokens extends Token[] = []> = Source extends ""
+type ScanTokens<Source extends string, Tokens extends Token[] = [], LastMinuses extends string = ""> = Source extends ""
     ? Tokens // Empty source results in scanned tokens
     : // Add 1 to Current
     Source extends `${infer Character}${infer RestOfSource}` // const c = this.#advance();
     ? // readonly #lexmap = new Map(...)
       Character extends " " | "\r" | "\t" | "\v" | "\f" | "\n"
-        ? ScanTokens<RestOfSource, Tokens>
+        ? ScanTokens<RestOfSource, Tokens, LastMinuses>
+        : IsDigit<Character> extends true
+        ? RestOfSource extends `${infer NumericBase}${infer NextRestOfSource}`
+            ? NumericBase extends keyof ScannerDigitsForBase // Is the base even valid
+                ? Character extends "0" // Only 0 can be the first character of a number literal with a base
+                    ? ExtractNumber<NextRestOfSource, ScannerDigitsForBase[NumericBase]> extends [
+                          infer NewRestOfSource,
+                          infer ExtractedNumber,
+                      ]
+                        ? ScanTokens<
+                              NewRestOfSource & string,
+                              [
+                                  ...Tokens,
+                                  Token<"numberliteral", `${LastMinuses}0${NumericBase}${ExtractedNumber & string}`>,
+                              ]
+                          >
+                        : never
+                    : never
+                : ExtractNumber<Source, DecimalDigit> extends [infer NewRestOfSource, infer ExtractedNumber]
+                ? ScanTokens<
+                      NewRestOfSource & string,
+                      [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber & string}`>]
+                  >
+                : never
+            : ExtractNumber<Source, DecimalDigit> extends [infer NewRestOfSource, infer ExtractedNumber]
+            ? ScanTokens<
+                  NewRestOfSource & string,
+                  [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber & string}`>]
+              >
+            : never
+        : Character extends "-"
+        ? ScanTokens<RestOfSource, Tokens, `${LastMinuses}-`>
+        : LastMinuses extends `-${string}` // At least one minus
+        ? never
         : Character extends "("
         ? ScanTokens<RestOfSource, [...Tokens, Token<"leftparen", Character>]>
         : Character extends ")"
@@ -166,12 +199,6 @@ type ScanTokens<Source extends string, Tokens extends Token[] = []> = Source ext
         ? ScanTokens<RestOfSource, [...Tokens, Token<"comma", Character>]>
         : Character extends "?"
         ? ScanTokens<RestOfSource, [...Tokens, Token<"questionmark", Character>]>
-        : Character extends "-"
-        ? RestOfSource extends `${infer MightBeDigit}${infer NextRestOfSource}`
-            ? IsDigit<MightBeDigit> extends true
-                ? "NOT IMPLEMENTED" // XXX: Make this work
-                : ScanTokens<RestOfSource, [...Tokens, Token<"minus">]>
-            : ScanTokens<RestOfSource, [...Tokens, Token<"minus">]>
         : Character extends '"' | "'"
         ? ExtractString<RestOfSource, Character, "stringliteral"> extends [infer NewRestOfSource, infer ExtractedString]
             ? ScanTokens<NewRestOfSource & string, [...Tokens, Token<"stringliteral", ExtractedString & string>]>
@@ -182,27 +209,8 @@ type ScanTokens<Source extends string, Tokens extends Token[] = []> = Source ext
             ? ScanTokens<NewRestOfSource & string, Tokens>
             : never
         : // Past the lexmap now
-        IsDigit<Character> extends true
-        ? RestOfSource extends `${infer NumericBase}${infer NextRestOfSource}`
-            ? NumericBase extends keyof ScannerDigitsForBase // Is the base even valid
-                ? Character extends "0" // Only 0 can be the first character of a number literal with a base
-                    ? ExtractNumber<NextRestOfSource, ScannerDigitsForBase[NumericBase]> extends [
-                          infer NewRestOfSource,
-                          infer ExtractedNumber,
-                      ]
-                        ? ScanTokens<
-                              NewRestOfSource & string,
-                              [...Tokens, Token<"numberliteral", `0${NumericBase}${ExtractedNumber & string}`>]
-                          >
-                        : never
-                    : never
-                : ExtractNumber<Source, DecimalDigit> extends [infer NewRestOfSource, infer ExtractedNumber]
-                ? ScanTokens<NewRestOfSource & string, [...Tokens, Token<"numberliteral", ExtractedNumber & string>]>
-                : never
-            : ExtractNumber<Source, DecimalDigit> extends [infer NewRestOfSource, infer ExtractedNumber]
-            ? ScanTokens<NewRestOfSource & string, [...Tokens, Token<"numberliteral", ExtractedNumber & string>]>
-            : never
-        : IsIdentifierStart<Character> extends true
+
+        IsIdentifierStart<Character> extends true
         ? ExtractIdentifier<RestOfSource, Character> extends [infer NewRestOfSource, infer ExtractedToken]
             ? ExtractedToken extends Token
                 ? ScanTokens<NewRestOfSource & string, [...Tokens, ExtractedToken]>
@@ -308,6 +316,48 @@ type IsIdentifierBody<Character extends string> = Character extends
     ? true
     : false;
 
+// Actual parsing shit
+
+type Expr = never;
+
+type ArrayExpr<Expression extends Expr> = {
+    type: "array";
+    expr: Expression;
+};
+
+type CallExpr<Identifier extends string, Args extends Record<string, Expr>> = {
+    type: "call";
+    identifier: Identifier;
+    args: Args;
+};
+
+type GroupingExpr<Expression extends Expr[]> = {
+    type: "grouping";
+    expr: Expression;
+};
+
+type LiteralExpr<Value> = {
+    type: "literal";
+    value: Value;
+};
+
+type ObjectExpr<Props extends PropExpr<string | RegExp, GroupingExpr<Expr[]>, boolean>[]> = {
+    type: "object";
+    props: Props;
+};
+
+type PropExpr<Name extends string | RegExp, Value extends GroupingExpr<Expr[]>, Optional extends boolean> = {
+    type: "prop";
+    name: Name;
+    value: Value;
+    optional: Optional;
+};
+
+type TupleExpr<Elements extends GroupingExpr<Expr[]>[]> = {
+    type: "tuple";
+    elements: Elements;
+};
+
 // Debugging
 
 type OnlyTokenTypes<T> = {
@@ -319,7 +369,7 @@ type T01 = OnlyTokenTypes<ScanTokens<`()[]{}:;,?- "" # o k`>>;
 type T02 = ScanTokens<`( 'i\\'m kelly' )`>;
 
 // Make negative numbers work later
-type T03 = ScanTokens<`( 42e123.14 ABC true )`>;
+type T03 = ScanTokens<`( 42e123.14 ABC true --42 )`>;
 
 type T04 = ScanTokens<`{
     type: string;

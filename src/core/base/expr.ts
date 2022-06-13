@@ -96,7 +96,6 @@ export class PropExpr extends Expr {
         readonly token: Token,
         readonly value: GroupingExpr,
         readonly optional: boolean,
-        readonly root = false,
     ) {
         super();
 
