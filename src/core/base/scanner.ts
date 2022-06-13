@@ -209,6 +209,13 @@ export class Scanner {
                 `Number literals cannot end with a numeric separator.`,
             );
 
+        if (is !== this.#isDigit && this.#current - this.#start <= 2)
+            throw new SynthesizerSyntaxError(
+                this.source,
+                Token.marker("0x", this.#line, this.#col),
+                `Expected a numeric value after this base.`,
+            );
+
         const token = this.#addToken(
             TokenType.NumberLiteral,
             Number(this.source.substring(this.#start, this.#current).replaceAll("_", "")), // Remove numeric separators

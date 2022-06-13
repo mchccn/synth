@@ -1,3 +1,11 @@
+// I'm sad GitHub doesn't count .d.ts files as TypeScript
+// I understand the premise and reasoning behind it, but...
+// I can't help but feel that I am missing out on at least
+// a thousand lines of .d.ts with this project
+
+// Prettier does not currently support `infer X extends Y`
+// which is why I am still using intersections with inferences
+
 // Utility types
 
 type UnknownArray = ReadonlyArray<unknown>;
@@ -48,6 +56,37 @@ type ScannerKeywords = {
     false: TokenType<"false">;
 };
 
+type ScannerDigitsForBase = {
+    b: "0" | "1";
+    o: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+    x:
+        | "0"
+        | "1"
+        | "2"
+        | "3"
+        | "4"
+        | "5"
+        | "6"
+        | "7"
+        | "8"
+        | "9"
+        | "a"
+        | "b"
+        | "c"
+        | "d"
+        | "e"
+        | "f"
+        | "A"
+        | "B"
+        | "C"
+        | "D"
+        | "E"
+        | "F";
+} & {
+    // Defaults to decimal
+    [key: string]: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+};
+
 // Actual parsing shit
 
 type ScanTokens<Source extends string, Tokens extends Token[] = []> = Source extends ""
@@ -94,6 +133,31 @@ type ScanTokens<Source extends string, Tokens extends Token[] = []> = Source ext
           SkipComments<RestOfSource> extends [infer NewRestOfSource]
             ? ScanTokens<NewRestOfSource & string, Tokens>
             : never
+        : // Past the lexmap now
+        IsDigit<Character> extends true
+        ? RestOfSource extends `${infer NumericBase}${infer RestOfSource}`
+            ? NumericBase extends keyof ScannerDigitsForBase // Is the base even valid
+                ? Character extends "0" // Only 0 can be the first character of a number literal with a base
+                    ? ExtractNumber<RestOfSource, ScannerDigitsForBase[NumericBase]> extends [
+                          infer NewRestOfSource,
+                          infer ExtractedNumber,
+                      ]
+                        ? ScanTokens<
+                              NewRestOfSource & string,
+                              [...Tokens, Token<TokenType<"numberliteral">, ExtractedNumber & string>]
+                          >
+                        : never
+                    : never
+                : never
+            : ExtractNumber<RestOfSource, ScannerDigitsForBase[string]> extends [
+                  infer NewRestOfSource,
+                  infer ExtractedNumber,
+              ]
+            ? ScanTokens<
+                  NewRestOfSource & string,
+                  [...Tokens, Token<TokenType<"numberliteral">, ExtractedNumber & string>]
+              >
+            : never
         : never // Continue implementing (src/core/base/scanner.ts line 83) ...
     : never; // Should never happen because we check if Current is past the Source length
 
@@ -120,6 +184,17 @@ type ExtractString<
         ? [RestOfSource, `${QuoteToStopAt}${ResultingString}${QuoteToStopAt}`]
         : ExtractString<RestOfSource, QuoteToStopAt, StringType, Character, `${ResultingString}${Character}`>
     : never; // Should never happen because we check if Source is empty
+
+type ExtractNumber<
+    Source extends string,
+    AllowedDigits extends string,
+    LastChar extends string = "",
+    ResultingNumber extends string = "",
+> = 0;
+
+type IsDigit<Character extends string> = Character extends "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+    ? true
+    : false;
 
 // Debugging
 
