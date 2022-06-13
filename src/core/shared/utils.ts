@@ -31,6 +31,7 @@ export function oneOfTheThingsIn(list: readonly string[]) {
         .join(", ")} or '${list[list.length - 1]}'`;
 }
 
+// This is only one level deep
 export function mergeWithDefaults<T>(provided: Partial<T>, defaults: T) {
     const out = Object.assign({}, defaults);
 

@@ -21,16 +21,15 @@ export type GetObjectType<T extends readonly (readonly [string | RegExp, Validat
     [K in Extract<T[number], readonly [any, any, false]>[0] as K extends RegExp ? string : K]: K extends RegExp
         ? GetNodeType<Extract<T[number], readonly [RegExp, any, any]>[1]>
         : GetNodeType<Extract<T[number], readonly [K, any, any]>[1]>;
-} &
-    {
-        [K in Extract<T[number], readonly [any, any, true]>[0]]?: GetNodeType<
-            Extract<T[number], readonly [K, any, any]>[1]
-        >;
-    } extends infer O
+} & {
+    [K in Extract<T[number], readonly [any, any, true]>[0]]?: GetNodeType<
+        Extract<T[number], readonly [K, any, any]>[1]
+    >;
+} extends infer O
     ? { [K in keyof O]: O[K] }
     : never;
 
-export type NoStrictObjectNodesInIntersection = `Strict object nodes are disallowed in an intersection.`;
+export type NoOverrideBuiltIns = [`This key already exists as a built-in to Synth.`];
 
 export type HighlightColors = Record<Methods<typeof chalk>, TokenType[]>;
 
