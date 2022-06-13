@@ -10,10 +10,10 @@
 
 -   [Getting started](./getting-started.md)
 
--   [Synth FAQ](./faq.md)
+-   🚧 [Synth FAQ](./faq.md)
 
--   [Reference](./reference/README.md)
-
+-   🚧 [Reference](./reference/README.md)
+<!--
     -   [Synth language](./reference/lang/README.md)
     -   [Core API](./reference/api/README.md)
     -   [Type guards](./reference/guards/README.md)
@@ -22,14 +22,15 @@
     -   [Tree manipulation](./reference/trees/README.md)
     -   [Synth CLI](./reference/cli/README.md)
     -   [Plugin system](./reference/plugins/README.md)
-
--   [For contributors](./for-contributors/README.md)
-
+-->
+-   🚧 [For contributors](./for-contributors/README.md)
+<!--
     -   [Language design](./for-contributors/lang/README.md)
     -   [Synth internals](./for-contributors/core/README.md)
     -   [Core API](./for-contributors/api/README.md)
     -   [Synth CLI](./for-contributors/cli/README.md)
     -   [Synth plugins](./for-contributors/plugins/README.md)
+-->
 
 ## Features
 
