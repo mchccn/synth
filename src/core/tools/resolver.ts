@@ -10,6 +10,7 @@ import {
     TupleExpr,
     UnaryExpr,
 } from "../base/expr.js";
+import { Token } from "../base/token.js";
 import { TokenType } from "../base/tokentype.js";
 import * as constraints from "../generators/index.js";
 import { SynthesizerSyntaxError } from "../shared/errors.js";
@@ -42,6 +43,44 @@ export class Resolver implements ExprVisitor<Expr> {
 
             return arg.accept(this);
         });
+
+        if (expr.identifier.name === "NaN") {
+            if (expr.raw.size)
+                throw new SynthesizerSyntaxError(this.#source, expr.identifier, `NaN does not expect any arguments.`);
+
+            return new LiteralExpr(
+                NaN,
+                new Token(
+                    TokenType.NumberLiteral,
+                    "NaN",
+                    NaN,
+                    expr.identifier.index,
+                    expr.identifier.line,
+                    expr.identifier.col,
+                ),
+            );
+        }
+
+        if (expr.identifier.name === "Infinity") {
+            if (expr.raw.size)
+                throw new SynthesizerSyntaxError(
+                    this.#source,
+                    expr.identifier,
+                    `Infinity does not expecet any arguments`,
+                );
+
+            return new LiteralExpr(
+                Infinity,
+                new Token(
+                    TokenType.NumberLiteral,
+                    "Infinity",
+                    Infinity,
+                    expr.identifier.index,
+                    expr.identifier.line,
+                    expr.identifier.col,
+                ),
+            );
+        }
 
         if (!(expr.identifier.lexeme in constraints))
             throw new SynthesizerSyntaxError(
@@ -95,7 +134,7 @@ export class Resolver implements ExprVisitor<Expr> {
 
     visitUnaryExpr(expr: UnaryExpr): Expr {
         if (expr.operator.type === TokenType.Minus) {
-            if (expr.expr instanceof UnaryExpr) Reflect.set(expr, "expr", expr.expr.accept(this));
+            Reflect.set(expr, "expr", expr.expr.accept(this));
 
             if (!(expr.expr instanceof LiteralExpr) || typeof expr.expr.value !== "number")
                 throw new SynthesizerSyntaxError(

@@ -8,7 +8,9 @@
 
 ## Contents
 
--   [Getting started](./getting-started/README.md)
+-   [Getting started](./getting-started.md)
+
+-   [Synth FAQ](./faq.md)
 
 -   [Reference](./reference/README.md)
 

@@ -7,6 +7,8 @@ export class LiteralNode<Literal extends unknown> extends ValidationNode<Literal
     }
 
     check(value: unknown) {
+        if (Number.isNaN(this.value)) return Number.isNaN(value);
+
         return value === this.value && this.satisfied(value as any);
     }
 }
