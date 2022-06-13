@@ -1,6 +1,7 @@
 //@ts-ignore
 if (typeof process === "undefined") globalThis.process = { env: {} };
 
+export * from "../precompiled.js";
 export * from "./core/index.js";
 export * as core from "./core/index.js";
 export * from "./guards/index.js";
