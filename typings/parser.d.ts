@@ -393,9 +393,50 @@ type ParseExpression<Tokens extends Token[]> = Tokens extends [
     ? First["type"] extends "leftbracket"
         ? 0
         : First["type"] extends "leftbrace"
-            ? 0
+            ? ParseTuple<RestOfTokens> extends [
+                  infer NewRestOfTokens extends Token[],
+                  infer Tuple extends Expr,
+              ]
+                ? ParsePostmodWrapIntoArray<NewRestOfTokens, Tuple>
+                : never
             : ParsePostmod<Tokens>
     : never;
+
+type ParseTuple<Tokens extends Token[], Elements extends GroupingExpr<Expr[]>[] = []> =
+    Tokens extends [
+        infer First extends Token,
+        ...infer RestOfTokens extends Token[],
+    ]
+        ? First["type"] extends "rightbrace"
+            ? [RestOfTokens, TupleExpr<Elements>]
+            : ParseTupleElement<Tokens> extends [
+                  infer NewRestOfTokens extends Token[],
+                  infer Element extends Expr[]
+              ]
+                ? ParseTuple<NewRestOfTokens, [...Elements, GroupingExpr<Element>]>
+                : never
+    : never;
+
+type ParseTupleElement<Tokens extends Token[], Element extends Expr[] = []> =
+    Tokens extends [
+        infer First extends Token,
+        ...infer RestOfTokens extends Token[],
+    ]
+        ? First["type"] extends "rightbrace"
+            ? Element extends []
+                ? never
+                : [Tokens, Element]
+            : First["type"] extends "comma"
+            ? Element extends []
+                ? never
+                : [RestOfTokens, Element]
+            : ParseExpression<Tokens> extends [
+                  infer NewRestOfTokens extends Token[],
+                  infer Parsed extends Expr
+              ]
+                ? ParseTupleElement<NewRestOfTokens, [...Element, Parsed]>
+                : never
+        : never
 
 type ParsePostmod<Tokens extends Token[]> = ParsePrimary<Tokens> extends [
     infer NewTokens extends Token[],
@@ -451,7 +492,12 @@ type ParsePrimary<Tokens extends Token[]> = Tokens extends [
                                         : [RestOfTokens, CallExpr<First["lexeme"], {}>]
                                     : [RestOfTokens, CallExpr<First["lexeme"], {}>]
                                 : First["type"] extends "leftparen"
-                                    ? [RestOfTokens, LiteralExpr<"NOT IMPLEMENTED">]
+                                    ? ParseGroupingExpression<RestOfTokens> extends [
+                                          infer EvenNewerRestOfTokens extends Token[],
+                                          infer Parsed extends Expr,
+                                      ]
+                                        ? [EvenNewerRestOfTokens, Parsed]
+                                        : never
                                     : never
         : never;
 
@@ -482,7 +528,24 @@ type ParseCallArgs<Tokens extends Token[], Args = {}> =
                         : never
                     : never
                 : never
-        : never
+        : never;
+
+type ParseGroupingExpression<Tokens extends Token[], Pattern extends Expr[] = []> =
+    Tokens extends [
+        infer First extends Token,
+        ...infer RestOfTokens extends Token[],
+    ]
+        ? First["type"] extends "rightparen"
+            ? Pattern extends []
+                ? never
+                : [RestOfTokens, GroupingExpr<Pattern>]
+            : ParseExpression<Tokens> extends [
+                  infer NewRestOfTokens extends Token[],
+                  infer Parsed extends Expr,
+              ]
+                ? ParseGroupingExpression<NewRestOfTokens, [...Pattern, Parsed]>
+                : never
+        : never;
 
 type Expr = { type: string };
 
@@ -546,4 +609,6 @@ type T04 = Scan<`{
     };
 }`>;
 
-type T10 = Parse<Scan<`number range(min: 100, max: 100)`>>
+type T10 = Parse<Scan<`number range(min: 100, max: 100)`>>;
+
+type T11 = Parse<Scan<`[0, 0][]`>>;
