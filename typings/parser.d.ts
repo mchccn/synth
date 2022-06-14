@@ -41,18 +41,108 @@ type TrimLeadingZeroes<S extends string> = S extends `0${infer R}` ? TrimLeading
 
 type IsInteger<S extends string> = S extends `${infer D}${infer R}` ? D extends DecimalDigit ? IsInteger<R> : false : true;
 
+// Number to type
+
+type BinaryTimes<A extends UnknownArray> = [...A, ...A];
+
+type OctalTimes<A extends UnknownArray> = [...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A];
+
+type HexTimes<A extends UnknownArray> = [...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A];
+
+type DigitToValue = {
+    [K in DecimalDigit]: TupleOfLength<K>;
+} & {
+    a: TupleOfLength<"10">;
+    b: TupleOfLength<"11">;
+    c: TupleOfLength<"12">;
+    d: TupleOfLength<"13">;
+    e: TupleOfLength<"14">;
+    f: TupleOfLength<"15">;
+} & {
+    A: TupleOfLength<"10">;
+    B: TupleOfLength<"11">;
+    C: TupleOfLength<"12">;
+    D: TupleOfLength<"13">;
+    E: TupleOfLength<"14">;
+    F: TupleOfLength<"15">;
+};
+
+type Multiply<
+    A extends UnknownArray,
+    Times extends UnknownArray,
+    TimesDone extends UnknownArray = [],
+    Original extends UnknownArray = A,
+> = Times["length"] extends 0
+    ? []
+    : [...TimesDone, unknown]["length"] extends Times["length"]
+    ? A
+    : Multiply<[...A, ...Original], Times, [...TimesDone, unknown], Original>;
+
+type BinaryExponent<
+    Base extends UnknownArray,
+    Times extends UnknownArray,
+    TimesDone extends UnknownArray = [],
+> = Times["length"] extends 0
+    ? [unknown]
+    : TimesDone["length"] extends Times["length"]
+        ? Base
+        : BinaryExponent<BinaryTimes<Base>, Times, [...TimesDone, unknown]>;
+
+type OctalExponent<
+    Base extends UnknownArray,
+    Times extends UnknownArray,
+    TimesDone extends UnknownArray = [],
+> = Times["length"] extends 0
+    ? [unknown]
+    : TimesDone["length"] extends Times["length"]
+        ? Base
+        : OctalExponent<OctalTimes<Base>, Times, [...TimesDone, unknown]>;
+    
+type HexExponent<
+    Base extends UnknownArray,
+    Times extends UnknownArray,
+    TimesDone extends UnknownArray = [],
+> = Times["length"] extends 0
+    ? [unknown]
+    : TimesDone["length"] extends Times["length"]
+        ? Base
+        : HexExponent<HexTimes<Base>, Times, [...TimesDone, unknown]>;
+
+type TryBinary<S extends string, Result extends UnknownArray = []> =
+    S extends `${infer D}${infer R}` 
+    ? D extends keyof DigitToValue
+        ? TryBinary<R, [...Result, ...Multiply<BinaryExponent<[unknown], TupleOfLength<`${StringLength<R>}`>>, DigitToValue[D]>]>
+        : number
+    : Result["length"];
+
+type TryOctal<S extends string, Result extends UnknownArray = []> =
+    S extends `${infer D}${infer R}` 
+    ? D extends keyof DigitToValue
+        //@ts-ignore
+        ? TryOctal<R, [...Result, ...Multiply<OctalExponent<[unknown], TupleOfLength<`${StringLength<R>}`>>, DigitToValue[D]>]>
+        : number
+    : Result["length"];
+
+type TryHex<S extends string, Result extends UnknownArray = []> =
+    S extends `${infer D}${infer R}` 
+    ? D extends keyof DigitToValue
+        //@ts-ignore
+        ? TryHex<R, [...Result, ...Multiply<HexExponent<[unknown], TupleOfLength<`${StringLength<R>}`>>, DigitToValue[D]>]>
+        : number
+    : Result["length"];
+
 type TryRealNumberLiteral<S extends string> =
     S extends `0b${infer N}`
-    ? 0
+    ? TryBinary<N>
     : S extends `0o${infer N}`
-    ? 0
+    ? TryOctal<N>
     : S extends `0x${infer N}`
-    ? 0
-    : IsInteger<TrimLeadingZeroes<S>> extends true
-        ? TupleOfLength<TrimLeadingZeroes<S>>
-        : number
+    ? TryHex<N>
+    : S extends `${infer N extends number}`
+        ? N
+        : never
 
-type TupleOfLength<N extends string, R extends UnknownArray = []> = R["length"] extends N ? R : TupleOfLength<N, [...R, unknown]>;
+type TupleOfLength<N extends string, R extends UnknownArray = []> = `${R["length"]}` extends N ? R : TupleOfLength<N, [...R, unknown]>;
 
 // Simple Definitions
 
@@ -108,32 +198,38 @@ type Scan<
                           infer NewRestOfSource extends string,
                           infer ExtractedNumber extends string,
                       ]
-                        ? Scan<
-                              NewRestOfSource,
-                              [
-                                  ...Tokens,
-                                  Token<"numberliteral", `${LastMinuses}0${NumericBase}${ExtractedNumber}`>,
-                              ]
-                          >
+                        ? ExtractedNumber extends ""
+                            ? never 
+                            : Scan<
+                                NewRestOfSource,
+                                [
+                                    ...Tokens,
+                                    Token<"numberliteral", `${LastMinuses}0${NumericBase}${ExtractedNumber}`>,
+                                ]
+                              >
                         : never
                     : never
                 : ExtractNumber<Source, DecimalDigit> extends [
                       infer NewRestOfSource extends string,
                       infer ExtractedNumber extends string,
                   ]
-                    ? Scan<
-                        NewRestOfSource,
-                        [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber}`>]
-                      >
+                    ? ExtractedNumber extends ""
+                        ? never
+                        : Scan<
+                            NewRestOfSource,
+                            [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber}`>]
+                          >
                     : never
             : ExtractNumber<Source, DecimalDigit> extends [
                   infer NewRestOfSource extends string,
                   infer ExtractedNumber extends string,
               ]
-                ? Scan<
-                    NewRestOfSource,
-                    [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber}`>]
-                  >
+                ? ExtractedNumber extends ""
+                    ? never
+                    : Scan<
+                        NewRestOfSource,
+                        [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber}`>]
+                      >
                 : never
         : Character extends "-"
         ? Scan<RestOfSource, Tokens, `${LastMinuses}-`>
@@ -213,9 +309,7 @@ type ExtractNumber<
     ExpectingE extends boolean = true,
     LastChar extends string = "",
     ResultingNumber extends string = "",
-> = Source extends ""
-    ? ["", ResultingNumber]
-    : Source extends `${infer Next}${infer RestOfSource}`
+> = Source extends `${infer Next}${infer RestOfSource}`
     ? Next extends AllowedDigits | "_"
         ? Next extends "_"
             ? LastChar extends "e" | "."
@@ -242,12 +336,17 @@ type ExtractNumber<
             ? never
             : ExtractNumber<RestOfSource, AllowedDigits, true, false, Next, `${ResultingNumber}e`>
         : [Source, ResultingNumber]
-    : never; // Should never happen because we check if Source is empty
+    : [Source, ResultingNumber];
 
 type ExtractIdentifier<Source extends string, Start extends string> = Start extends "r" | "s"
-    ? Source extends `${infer MaybeQuote}${string}`
+    ? Source extends `${infer MaybeQuote}${infer RestOfSource}`
         ? MaybeQuote extends "'" | '"'
-            ? ExtractString<Source, MaybeQuote, Start extends "r" ? "regexstringliteral" : "sourcestringliteral">
+            ? ExtractString<RestOfSource, MaybeQuote, Start extends "r" ? "regexstringliteral" : "sourcestringliteral"> extends [
+                infer NewSource extends string,
+                infer ExtractedString extends string,
+              ]
+                ? [NewSource, Token<Start extends "r" ? "regexstringliteral" : "sourcestringliteral", ExtractedString>]
+                : never
             : ExtractIdentifierBody<Source, Start>
         : ExtractIdentifierBody<Source, Start>
     : ExtractIdentifierBody<Source, Start>;
@@ -262,7 +361,7 @@ type ExtractIdentifierBody<
         : `${Start}${ResultingBody}` extends keyof ScannerKeywords
         ? [Source, Token<ScannerKeywords[`${Start}${ResultingBody}`]>]
         : [Source, Token<"identifier", `${Start}${ResultingBody}`>]
-    : never;
+    : [Source, Token<"identifier", `${Start}${ResultingBody}`>];
 
 type IsDigit<Character extends string> = Character extends DecimalDigit ? true : false;
 
@@ -336,13 +435,54 @@ type ParsePrimary<Tokens extends Token[]> = Tokens extends [
                     : First["type"] extends "regexstringliteral"
                         ? [RestOfTokens, LiteralExpr<RegExp>]
                         : First["type"] extends "numberliteral"
-                            ? [RestOfTokens, LiteralExpr<First["lexeme"]>]
+                            ? [RestOfTokens, LiteralExpr<TryRealNumberLiteral<First["lexeme"]>>]
                             : First["type"] extends "identifier"
-                                ? [RestOfTokens, LiteralExpr<"NOT IMPLEMENTED">]
+                                ? RestOfTokens extends [
+                                    infer Next extends Token,
+                                    ...infer NewRestOfTokens extends Token[],
+                                  ]
+                                    ? Next["type"] extends "leftparen"
+                                        ? ParseCallArgs<NewRestOfTokens> extends [
+                                            infer EvenNewerRestOfTokens extends Token[],
+                                            infer ParsedArgs extends Record<string, Expr>,
+                                          ]
+                                            ? [EvenNewerRestOfTokens, CallExpr<First["lexeme"], ParsedArgs>]
+                                            : never
+                                        : [RestOfTokens, CallExpr<First["lexeme"], {}>]
+                                    : [RestOfTokens, CallExpr<First["lexeme"], {}>]
                                 : First["type"] extends "leftparen"
                                     ? [RestOfTokens, LiteralExpr<"NOT IMPLEMENTED">]
                                     : never
         : never;
+
+type ParseCallArgs<Tokens extends Token[], Args = {}> =
+    Tokens extends [
+        infer Ident extends Token,
+        infer Colon extends Token,
+        ...infer RestOfTokens extends Token[],
+    ]
+        ? Ident["type"] extends "rightparen"
+            ? [[Colon, ...RestOfTokens], Args extends infer O ? { [K in keyof O]: O[K] } : never]
+            : Ident["type"] extends "identifier"
+                ? Colon["type"] extends "colon"
+                    ? ParseExpression<RestOfTokens> extends [
+                        infer NewTokens extends Token[],
+                        infer Parsed extends Expr,
+                      ]
+                        ? NewTokens extends [
+                            infer Comma extends Token,
+                            ...infer NewRestOfTokens extends Token[]
+                          ]
+                            ? Comma["type"] extends "comma"
+                                ? ParseCallArgs<NewRestOfTokens, Args & { [_ in Ident["lexeme"]]: Parsed }>
+                                : Comma["type"] extends "rightparen"
+                                    ? [NewRestOfTokens, Args & { [_ in Ident["lexeme"]]: Parsed } extends infer O ? { [K in keyof O]: O[K] } : never]
+                                    : never
+                            : never
+                        : never
+                    : never
+                : never
+        : never
 
 type Expr = { type: string };
 
@@ -406,4 +546,4 @@ type T04 = Scan<`{
     };
 }`>;
 
-type T10 = Parse<[Token<"numberliteral", "0x42">]>;
+type T10 = Parse<Scan<`number range(min: 100, max: 100)`>>
