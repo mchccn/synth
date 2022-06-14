@@ -52,7 +52,16 @@ export class Parser {
 
             this.#consume(TokenType.RightBracket, `Expected a closing bracket after this expression.`, true);
 
-            const expr = new ObjectExpr(properties, start, this.#previous());
+            let expr = new ObjectExpr(properties, start, this.#previous()) as Expr;
+
+            while (this.#check(TokenType.LeftBrace)) {
+                const end = this.#peek();
+
+                if (this.#match(TokenType.LeftBrace)) {
+                    this.#consume(TokenType.RightBrace, `Expected a closing bracket for an array type.`);
+                    expr = new ArrayExpr(expr, start, end);
+                }
+            }
 
             return expr;
         }
@@ -81,7 +90,18 @@ export class Parser {
 
             this.#consume(TokenType.RightBrace, `Expected a closing bracket after this tuple.`, true);
 
-            return new TupleExpr(elements, start, this.#previous());
+            let expr = new TupleExpr(elements, start, this.#previous()) as Expr;
+
+            while (this.#check(TokenType.LeftBrace)) {
+                const end = this.#peek();
+
+                if (this.#match(TokenType.LeftBrace)) {
+                    this.#consume(TokenType.RightBrace, `Expected a closing bracket for an array type.`);
+                    expr = new ArrayExpr(expr, start, end);
+                }
+            }
+
+            return expr;
         }
 
         return this.#unary();
@@ -99,6 +119,7 @@ export class Parser {
                         return TokenType[this.#previous().type].toLowerCase();
 
                     case TokenType.StringLiteral:
+                    case TokenType.SourceStringLiteral:
                     case TokenType.NumberLiteral:
                         return (this.#previous().literal as string | number).toString();
 

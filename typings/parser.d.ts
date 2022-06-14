@@ -139,13 +139,13 @@ type ScannerDigitsForBase = {
 
 // Actual scanning shit
 
-type ScanTokens<Source extends string, Tokens extends Token[] = [], LastMinuses extends string = ""> = Source extends ""
+type Scan<Source extends string, Tokens extends Token[] = [], LastMinuses extends string = ""> = Source extends ""
     ? Tokens // Empty source results in scanned tokens
     : // Add 1 to Current
     Source extends `${infer Character}${infer RestOfSource}` // const c = this.#advance();
     ? // readonly #lexmap = new Map(...)
       Character extends " " | "\r" | "\t" | "\v" | "\f" | "\n"
-        ? ScanTokens<RestOfSource, Tokens, LastMinuses>
+        ? Scan<RestOfSource, Tokens, LastMinuses>
         : IsDigit<Character> extends true
         ? RestOfSource extends `${infer NumericBase}${infer NextRestOfSource}`
             ? NumericBase extends keyof ScannerDigitsForBase // Is the base even valid
@@ -154,7 +154,7 @@ type ScanTokens<Source extends string, Tokens extends Token[] = [], LastMinuses 
                           infer NewRestOfSource,
                           infer ExtractedNumber,
                       ]
-                        ? ScanTokens<
+                        ? Scan<
                               NewRestOfSource & string,
                               [
                                   ...Tokens,
@@ -164,56 +164,56 @@ type ScanTokens<Source extends string, Tokens extends Token[] = [], LastMinuses 
                         : never
                     : never
                 : ExtractNumber<Source, DecimalDigit> extends [infer NewRestOfSource, infer ExtractedNumber]
-                ? ScanTokens<
+                ? Scan<
                       NewRestOfSource & string,
                       [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber & string}`>]
                   >
                 : never
             : ExtractNumber<Source, DecimalDigit> extends [infer NewRestOfSource, infer ExtractedNumber]
-            ? ScanTokens<
+            ? Scan<
                   NewRestOfSource & string,
                   [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber & string}`>]
               >
             : never
         : Character extends "-"
-        ? ScanTokens<RestOfSource, Tokens, `${LastMinuses}-`>
+        ? Scan<RestOfSource, Tokens, `${LastMinuses}-`>
         : LastMinuses extends `-${string}` // At least one minus
         ? never
         : Character extends "("
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"leftparen", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"leftparen", Character>]>
         : Character extends ")"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"rightparen", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"rightparen", Character>]>
         : Character extends "["
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"leftbrace", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"leftbrace", Character>]>
         : Character extends "]"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"rightbrace", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"rightbrace", Character>]>
         : Character extends "{"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"leftbracket", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"leftbracket", Character>]>
         : Character extends "}"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"rightbracket", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"rightbracket", Character>]>
         : Character extends ":"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"colon", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"colon", Character>]>
         : Character extends ";"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"semicolon", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"semicolon", Character>]>
         : Character extends ","
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"comma", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"comma", Character>]>
         : Character extends "?"
-        ? ScanTokens<RestOfSource, [...Tokens, Token<"questionmark", Character>]>
+        ? Scan<RestOfSource, [...Tokens, Token<"questionmark", Character>]>
         : Character extends '"' | "'"
         ? ExtractString<RestOfSource, Character, "stringliteral"> extends [infer NewRestOfSource, infer ExtractedString]
-            ? ScanTokens<NewRestOfSource & string, [...Tokens, Token<"stringliteral", ExtractedString & string>]>
+            ? Scan<NewRestOfSource & string, [...Tokens, Token<"stringliteral", ExtractedString & string>]>
             : never
         : Character extends "#"
         ? // Skip the comment and get new Source and Current values
           SkipComments<RestOfSource> extends [infer NewRestOfSource]
-            ? ScanTokens<NewRestOfSource & string, Tokens>
+            ? Scan<NewRestOfSource & string, Tokens>
             : never
         : // Past the lexmap now
 
         IsIdentifierStart<Character> extends true
         ? ExtractIdentifier<RestOfSource, Character> extends [infer NewRestOfSource, infer ExtractedToken]
             ? ExtractedToken extends Token
-                ? ScanTokens<NewRestOfSource & string, [...Tokens, ExtractedToken]>
+                ? Scan<NewRestOfSource & string, [...Tokens, ExtractedToken]>
                 : never
             : never
         : never
@@ -318,7 +318,47 @@ type IsIdentifierBody<Character extends string> = Character extends
 
 // Actual parsing shit
 
-type Expr = never;
+type Parse<Tokens extends Token[], Pattern extends Expr[] = []> = Tokens extends []
+    ? GroupingExpr<Pattern>
+    : ParseExpression<Tokens> extends [infer NewTokens, infer Parsed]
+    ? Parsed extends Expr
+        ? Parse<NewTokens & Token[], [...Pattern, Parsed]>
+        : never
+    : never;
+
+type ParseExpression<Tokens extends Token[]> = Tokens extends [infer First, infer RestOfTokens]
+    ? First extends Token
+        ? RestOfTokens extends Token[]
+            ? First["type"] extends "leftbracket"
+                ? 0
+                : First["type"] extends "leftbrace"
+                ? 0
+                : ParsePostmod<Tokens>
+            : never
+        : never
+    : never; // !;
+
+type ParsePostmod<Tokens extends Token[]> = ParsePrimary<Tokens> extends [infer NewTokens, infer Parsed]
+    ? NewTokens extends [infer First, infer RestOfTokens]
+        ? First extends Token
+            ? RestOfTokens extends Token[]
+                ? First["type"] extends "leftbrace"
+                    ? RestOfTokens extends [infer Second, infer RestOfTokens]
+                        ? Second extends Token
+                            ? RestOfTokens extends Token[]
+                                ? Second["type"]
+                                : never
+                            : never
+                        : never
+                    : Parsed
+                : never
+            : never
+        : never
+    : never;
+
+type ParsePrimary<Tokens extends Token[]> = 0;
+
+type Expr = { type: string };
 
 type ArrayExpr<Expression extends Expr> = {
     type: "array";
@@ -364,14 +404,14 @@ type OnlyTokenTypes<T> = {
     [K in keyof T]: T[K] extends Token<infer Type> ? Type : T[K];
 };
 
-type T01 = OnlyTokenTypes<ScanTokens<`()[]{}:;,?- "" # o k`>>;
+type T01 = OnlyTokenTypes<Scan<`()[]{}:;,?- "" # o k`>>;
 
-type T02 = ScanTokens<`( 'i\\'m kelly' )`>;
+type T02 = Scan<`( 'i\\'m kelly' )`>;
 
 // Make negative numbers work later
-type T03 = ScanTokens<`( 42e123.14 ABC true --42 )`>;
+type T03 = Scan<`( 42e123.14 ABC true --42 )`>;
 
-type T04 = ScanTokens<`{
+type T04 = Scan<`{
     type: string;
     lhs: {
         type: "CONSTANT";

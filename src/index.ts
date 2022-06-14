@@ -1,3 +1,5 @@
+import { synthesize } from "./core/synthesize.js";
+
 //@ts-ignore
 if (typeof process === "undefined") globalThis.process = { env: {} };
 
@@ -14,3 +16,5 @@ export * from "./trees/index.js";
 export * as trees from "./trees/index.js";
 export * from "./types/index.js";
 export * as types from "./types/index.js";
+
+synthesize`{ foo: string; }[]`;
