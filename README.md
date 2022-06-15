@@ -26,10 +26,10 @@ Please note that it cannot do the following (yet):
 
 **Some quick links that you might find helpful:**
 
--   🏠 [Home page]()
--   📚 [Getting started]()
--   📖 [Reference]()
--   👓 [For contributors]()
+-   🏠 [Home page](https://kelsny.github.io/synth)
+-   📚 [Getting started](https://kelsny.github.io/synth/getting-started)
+-   📖 [Reference](https://kelsny.github.io/reference)
+-   👓 [For contributors](https://kelsny.github.io/for-contributors)
 -   🛠 [VSCode extension]()
 
 Feelin' synthwavy after using this? Give my [Nebula](https://vscode.dev/theme/kelsny.nebsies) theme for VSCode a spin.

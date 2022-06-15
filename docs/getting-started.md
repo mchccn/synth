@@ -111,5 +111,3 @@ if (is(BinaryExpression, value)) {
     value; // Same effect as above
 }
 ```
-
-
