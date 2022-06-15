@@ -4,8 +4,8 @@ type UnknownArray = ReadonlyArray<unknown>;
 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
-type Split<Input extends string, Separator extends string = ""> = Input extends ""
-    ? []
+type Split<Input extends string, Separator extends string = ""> =
+      Input extends "" ? []
     : Input extends `${infer Start}${Separator}${infer End}`
     ? [Start, ...Split<End, Separator>]
     : [Input];
@@ -17,21 +17,17 @@ type Increment<N extends UnknownArray> = [...N, unknown];
 type DecimalDigit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
 type LowercaseAlphabet =
-    | "a" | "b" | "c" | "d"
-    | "e" | "f" | "g" | "h"
-    | "i" | "j" | "k" | "l"
-    | "m" | "n" | "o" | "p"
-    | "q" | "r" | "s" | "t"
-    | "u" | "v" | "w" | "x"
+    | "a" | "b" | "c" | "d" | "e" | "f" 
+    | "g" | "h" | "i" | "j" | "k" | "l"
+    | "m" | "n" | "o" | "p" | "q" | "r" 
+    | "s" | "t" | "u" | "v" | "w" | "x"
     | "y" | "z" ;
 
 type UppercaseAlphabet =
-    | "A" | "B" | "C" | "D"
-    | "E" | "F" | "G" | "H"
-    | "I" | "J" | "K" | "L"
-    | "M" | "N" | "O" | "P"
-    | "Q" | "R" | "S" | "T"
-    | "U" | "V" | "W" | "X"
+    | "A" | "B" | "C" | "D" | "E" | "F" 
+    | "G" | "H" | "I" | "J" | "K" | "L"
+    | "M" | "N" | "O" | "P" | "Q" | "R" 
+    | "S" | "T" | "U" | "V" | "W" | "X"
     | "Y" | "Z" ;
 
 type TrimLeadingZeroes<S extends string> = S extends `0${infer R}` ? TrimLeadingZeroes<R> : S;
@@ -64,8 +60,6 @@ type OctalTimes<A extends UnknownArray> = [...A, ...A, ...A, ...A, ...A, ...A, .
 type HexTimes<A extends UnknownArray> = [...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A, ...A];
 
 type DigitToValue = {
-    [K in DecimalDigit]: TupleOfLength<K>;
-} & {
     a: TupleOfLength<"10">;
     b: TupleOfLength<"11">;
     c: TupleOfLength<"12">;
@@ -79,16 +73,15 @@ type DigitToValue = {
     D: TupleOfLength<"13">;
     E: TupleOfLength<"14">;
     F: TupleOfLength<"15">;
-};
+} & { [K in DecimalDigit]: TupleOfLength<K> };
 
 type Multiply<
     A extends UnknownArray,
     Times extends UnknownArray,
     TimesDone extends UnknownArray = [],
     Original extends UnknownArray = A,
-> = Times["length"] extends 0
-    ? []
-    : [...TimesDone, unknown]["length"] extends Times["length"]
+> = Times["length"] extends 0 ? []
+  : [...TimesDone, unknown]["length"] extends Times["length"]
     ? A
     : Multiply<[...A, ...Original], Times, [...TimesDone, unknown], Original>;
 
@@ -96,31 +89,28 @@ type BinaryExponent<
     Base extends UnknownArray,
     Times extends UnknownArray,
     TimesDone extends UnknownArray = [],
-> = Times["length"] extends 0
-    ? [unknown]
-    : TimesDone["length"] extends Times["length"]
-        ? Base
-        : BinaryExponent<BinaryTimes<Base>, Times, [...TimesDone, unknown]>;
+> = Times["length"] extends 0 ? [unknown]
+  : TimesDone["length"] extends Times["length"]
+    ? Base
+    : BinaryExponent<BinaryTimes<Base>, Times, [...TimesDone, unknown]>;
 
 type OctalExponent<
     Base extends UnknownArray,
     Times extends UnknownArray,
     TimesDone extends UnknownArray = [],
-> = Times["length"] extends 0
-    ? [unknown]
-    : TimesDone["length"] extends Times["length"]
-        ? Base
-        : OctalExponent<OctalTimes<Base>, Times, [...TimesDone, unknown]>;
+> = Times["length"] extends 0 ? [unknown]
+  : TimesDone["length"] extends Times["length"]
+    ? Base
+    : OctalExponent<OctalTimes<Base>, Times, [...TimesDone, unknown]>;
     
 type HexExponent< // Hexponent???
     Base extends UnknownArray,
     Times extends UnknownArray,
     TimesDone extends UnknownArray = [],
-> = Times["length"] extends 0
-    ? [unknown]
-    : TimesDone["length"] extends Times["length"]
-        ? Base
-        : HexExponent<HexTimes<Base>, Times, [...TimesDone, unknown]>;
+> = Times["length"] extends 0 ? [unknown]
+  : TimesDone["length"] extends Times["length"]
+    ? Base
+    : HexExponent<HexTimes<Base>, Times, [...TimesDone, unknown]>;
 
 type TryBinary<S extends string, Result extends UnknownArray = []> =
     S extends `${infer D}${infer R}` 
@@ -146,15 +136,10 @@ type TryHex<S extends string, Result extends UnknownArray = []> =
     : Result["length"];
 
 type TryRealNumberLiteral<S extends string> =
-    S extends `0b${infer N}`
-    ? TryBinary<N>
-    : S extends `0o${infer N}`
-    ? TryOctal<N>
-    : S extends `0x${infer N}`
-    ? TryHex<N>
-    : S extends `${infer N extends number}` // Credits to @0kku
-        ? N
-        : never
+      S extends `0b${infer N}` ? TryBinary<N>
+    : S extends `0o${infer N}` ? TryOctal<N>
+    : S extends `0x${infer N}` ? TryHex<N>
+    : S extends `${infer N extends number}` ? N : never // Credits to @0kku 
 
 type TupleOfLength<N extends string, R extends UnknownArray = []> = `${R["length"]}` extends N ? R : TupleOfLength<N, [...R, unknown]>;
 
@@ -163,16 +148,12 @@ type TupleOfLength<N extends string, R extends UnknownArray = []> = `${R["length
 type Token<Type extends TokenType = TokenType, Lexeme extends string = string> = { type: Type; lexeme: Lexeme };
 
 type TokenType =
-    | "leftparen"   | "rightparen"
-    | "leftbrace"   | "rightbrace"
-    | "leftbracket" | "rightbracket"
-    | "colon"       | "semicolon"
-    | "comma"       | "questionmark"
-    | "minus"       | "sourcestringliteral"
-    | "true"        | "regexstringliteral"
-    | "false"       | "stringliteral"
-    | "identifier"  | "numberliteral"
-;
+    | "colon"     | "leftparen"     | "rightparen"
+    | "comma"     | "leftbrace"     | "rightbrace"
+    | "minus"     | "leftbracket"   | "rightbracket"
+    | "true"      | "questionmark"  | "sourcestringliteral"
+    | "false"     | "identifier"    | "regexstringliteral"
+    | "semicolon" | "stringliteral" | "numberliteral"       ;
 
 // Mappings
 
@@ -195,11 +176,8 @@ type Scan<
     Source extends string,
     Tokens extends Token[] = [],
     LastMinuses extends string = "",
-> = string extends Source
-    ? Tokens
-    : Source extends ""
-    ? Tokens // Empty source results in scanned tokens
-    // Add 1 to Current
+> = string extends Source ? Tokens
+  : Source extends "" ? Tokens // Empty source results in scanned tokens
     : Source extends `${infer Character}${infer RestOfSource}` // const c = this.#advance();
     ? // Skip over whitespace
       Character extends " " | "\r" | "\t" | "\v" | "\f" | "\n"
@@ -293,9 +271,10 @@ type Scan<
         : never
     : never; // Should never happen because we check if Current is past the Source length
 
-type SkipComments<Source extends string> = Source extends ""
-    ? [""]
-    : Source extends `${infer IsThisANewLine}${infer RestOfSource}`
+type SkipComments<
+    Source extends string,
+> = Source extends "" ? [Source]
+  : Source extends `${infer IsThisANewLine}${infer RestOfSource}`
     ? IsThisANewLine extends "\n"
         ? [RestOfSource]
         : SkipComments<RestOfSource>
@@ -307,9 +286,8 @@ type ExtractString<
     StringType extends string,
     LastChar extends string = "",
     ResultingString extends string = "",
-> = Source extends ""
-    ? never
-    : Source extends `${infer Character}${infer RestOfSource}`
+> = Source extends "" ? never
+  : Source extends `${infer Character}${infer RestOfSource}`
     ? LastChar extends "\\" // Escaped anyways, so we continue disregarding if the character is a quote to stop at
         ? ExtractString<RestOfSource, QuoteToStopAt, StringType, Character, `${ResultingString}${Character}`>
         : Character extends QuoteToStopAt
@@ -428,7 +406,7 @@ type ParseObjectProp<Tokens extends Token[]> =
         infer Colon extends Token,
         ...infer RestOfTokens extends Token[],
     ]
-        ? Colon["type"] extends "questionmark" // This is an ptional property
+        ? Colon["type"] extends "questionmark" // This is an optional property
             ? RestOfTokens extends [
                   infer Colon extends Token,
                   ...infer RestOfTokens extends Token[]
@@ -552,40 +530,40 @@ type ParsePrimary<Tokens extends Token[]> = Tokens extends [
     infer First extends Token,
     ...infer RestOfTokens extends Token[],
 ]
-        ? First["type"] extends "true"
-            ? [RestOfTokens, LiteralExpr<true>]
-            : First["type"] extends "false"
-                ? [RestOfTokens, LiteralExpr<false>]
-                : First["type"] extends "stringliteral" | "sourcestringliteral"
-                    ? First["lexeme"] extends `${"s" | ""}${'"' | "'"}${infer S}${'"' | "'"}`
-                        ? [RestOfTokens, LiteralExpr<S>]
-                        : never
-                    : First["type"] extends "regexstringliteral"
-                        ? [RestOfTokens, LiteralExpr<RegExp>]
-                        : First["type"] extends "numberliteral"
-                            ? [RestOfTokens, LiteralExpr<TryRealNumberLiteral<First["lexeme"]>>]
-                            : First["type"] extends "identifier"
-                                ? RestOfTokens extends [
-                                    infer Next extends Token,
-                                    ...infer NewRestOfTokens extends Token[],
-                                  ]
-                                    ? Next["type"] extends "leftparen"
-                                        ? ParseCallArgs<NewRestOfTokens> extends [
-                                            infer EvenNewerRestOfTokens extends Token[],
-                                            infer ParsedArgs extends Record<string, Expr>,
-                                          ]
-                                            ? [EvenNewerRestOfTokens, CallExpr<First["lexeme"], ParsedArgs>]
-                                            : never
-                                        : [RestOfTokens, CallExpr<First["lexeme"], {}>]
-                                    : [RestOfTokens, CallExpr<First["lexeme"], {}>]
-                                : First["type"] extends "leftparen"
-                                    ? ParseGroupingExpression<RestOfTokens> extends [
+    ? First["type"] extends "true"
+        ? [RestOfTokens, LiteralExpr<true>]
+        : First["type"] extends "false"
+            ? [RestOfTokens, LiteralExpr<false>]
+            : First["type"] extends "stringliteral" | "sourcestringliteral"
+                ? First["lexeme"] extends `${"s" | ""}${'"' | "'"}${infer S}${'"' | "'"}`
+                    ? [RestOfTokens, LiteralExpr<S>]
+                    : never
+                : First["type"] extends "regexstringliteral"
+                    ? [RestOfTokens, LiteralExpr<RegExp>]
+                    : First["type"] extends "numberliteral"
+                        ? [RestOfTokens, LiteralExpr<TryRealNumberLiteral<First["lexeme"]>>]
+                        : First["type"] extends "identifier"
+                            ? RestOfTokens extends [
+                                  infer Next extends Token,
+                                  ...infer NewRestOfTokens extends Token[],
+                              ]
+                                ? Next["type"] extends "leftparen"
+                                    ? ParseCallArgs<NewRestOfTokens> extends [
                                           infer EvenNewerRestOfTokens extends Token[],
-                                          infer Parsed extends Expr,
+                                          infer ParsedArgs extends Record<string, Expr>,
                                       ]
-                                        ? [EvenNewerRestOfTokens, Parsed]
+                                        ? [EvenNewerRestOfTokens, CallExpr<First["lexeme"], ParsedArgs>]
                                         : never
+                                    : [RestOfTokens, CallExpr<First["lexeme"], {}>]
+                                : [RestOfTokens, CallExpr<First["lexeme"], {}>]
+                            : First["type"] extends "leftparen"
+                                ? ParseGroupingExpression<RestOfTokens> extends [
+                                      infer EvenNewerRestOfTokens extends Token[],
+                                      infer Parsed extends Expr,
+                                  ]
+                                    ? [EvenNewerRestOfTokens, Parsed]
                                     : never
+                                : never
         : never;
 
 type ParseCallArgs<Tokens extends Token[], Args = {}> =
@@ -599,12 +577,12 @@ type ParseCallArgs<Tokens extends Token[], Args = {}> =
             : Ident["type"] extends "identifier"
                 ? Colon["type"] extends "colon"
                     ? ParseExpression<RestOfTokens> extends [
-                        infer NewTokens extends Token[],
-                        infer Parsed extends Expr,
+                          infer NewTokens extends Token[],
+                          infer Parsed extends Expr,
                       ]
                         ? NewTokens extends [
-                            infer Comma extends Token,
-                            ...infer NewRestOfTokens extends Token[]
+                              infer Comma extends Token,
+                              ...infer NewRestOfTokens extends Token[]
                           ]
                             ? Comma["type"] extends "comma"
                                 ? ParseCallArgs<NewRestOfTokens, Args & { [_ in Ident["lexeme"]]: Parsed }>
@@ -701,9 +679,7 @@ type Generate<Expression extends Expr> =
             : Expression extends LiteralExpr<infer V>
                 ? V
                 : Expression extends TupleExpr<infer E>
-                    ? {
-                          [K in keyof E]: Generate<E[K]>;
-                      }
+                    ? { [K in keyof E]: Generate<E[K]> }
                     : Expression extends ObjectExpr<infer Props>
                         ? {
                               [K in Extract<Props[number], PropExpr<any, any, false>>["name"] as K extends RegExp ? string : K]: K extends RegExp
