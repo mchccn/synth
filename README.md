@@ -1,5 +1,7 @@
 # @kelsny/synth
 
+> 🚧 This project is still under construction. There might be bugs or unexpected behavior I have not thoroughly tested and prevented. Please submit these so I can fix them :D
+
 **⚡️ A tool for synthesizing types into runtime validators.**
 
 Give it a schema, and it gives you a validator that you can use however you'd like.
