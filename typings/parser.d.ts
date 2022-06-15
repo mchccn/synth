@@ -2,6 +2,8 @@
 
 type UnknownArray = ReadonlyArray<unknown>;
 
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
 type Split<Input extends string, Separator extends string = ""> = Input extends ""
     ? []
     : Input extends `${infer Start}${Separator}${infer End}`
@@ -35,6 +37,23 @@ type UppercaseAlphabet =
 type TrimLeadingZeroes<S extends string> = S extends `0${infer R}` ? TrimLeadingZeroes<R> : S;
 
 type IsInteger<S extends string> = S extends `${infer D}${infer R}` ? D extends DecimalDigit ? IsInteger<R> : false : true;
+
+type IsDigit<Character extends string> = Character extends DecimalDigit ? true : false;
+
+type IsIdentifierStart<Character extends string> = Character extends LowercaseAlphabet | UppercaseAlphabet | "_" | "$"
+    ? true
+    : false;
+
+type IsIdentifierBody<Character extends string> = Character extends
+    | LowercaseAlphabet
+    | UppercaseAlphabet
+    | DecimalDigit
+    | "_"
+    | "$"
+    ? true
+    : false;
+
+type RemoveUselessNegations<S extends string> = S extends `--${infer N}` ? RemoveUselessNegations<N> : S;
 
 // Number to type
 
@@ -93,7 +112,7 @@ type OctalExponent<
         ? Base
         : OctalExponent<OctalTimes<Base>, Times, [...TimesDone, unknown]>;
     
-type HexExponent<
+type HexExponent< // Hexponent???
     Base extends UnknownArray,
     Times extends UnknownArray,
     TimesDone extends UnknownArray = [],
@@ -113,7 +132,7 @@ type TryBinary<S extends string, Result extends UnknownArray = []> =
 type TryOctal<S extends string, Result extends UnknownArray = []> =
     S extends `${infer D}${infer R}` 
     ? D extends keyof DigitToValue
-        //@ts-ignore
+        //@ts-ignore Type produces a tuple type that is too large to represent. ts(2799)
         ? TryOctal<R, [...Result, ...Multiply<OctalExponent<[unknown], TupleOfLength<`${StringLength<R>}`>>, DigitToValue[D]>]>
         : number
     : Result["length"];
@@ -121,7 +140,7 @@ type TryOctal<S extends string, Result extends UnknownArray = []> =
 type TryHex<S extends string, Result extends UnknownArray = []> =
     S extends `${infer D}${infer R}` 
     ? D extends keyof DigitToValue
-        //@ts-ignore
+        //@ts-ignore Type produces a tuple type that is too large to represent. ts(2799)
         ? TryHex<R, [...Result, ...Multiply<HexExponent<[unknown], TupleOfLength<`${StringLength<R>}`>>, DigitToValue[D]>]>
         : number
     : Result["length"];
@@ -133,7 +152,7 @@ type TryRealNumberLiteral<S extends string> =
     ? TryOctal<N>
     : S extends `0x${infer N}`
     ? TryHex<N>
-    : S extends `${infer N extends number}`
+    : S extends `${infer N extends number}` // Credits to @0kku
         ? N
         : never
 
@@ -182,7 +201,7 @@ type Scan<
     ? Tokens // Empty source results in scanned tokens
     // Add 1 to Current
     : Source extends `${infer Character}${infer RestOfSource}` // const c = this.#advance();
-    ? // readonly #lexmap = new Map(...)
+    ? // Skip over whitespace
       Character extends " " | "\r" | "\t" | "\v" | "\f" | "\n"
         ? Scan<RestOfSource, Tokens, LastMinuses>
         : IsDigit<Character> extends true
@@ -199,7 +218,7 @@ type Scan<
                                 NewRestOfSource,
                                 [
                                     ...Tokens,
-                                    Token<"numberliteral", `${LastMinuses}0${NumericBase}${ExtractedNumber}`>,
+                                    Token<"numberliteral", `${RemoveUselessNegations<LastMinuses>}0${NumericBase}${ExtractedNumber}`>, // Prepend base before number
                                 ]
                               >
                         : never
@@ -212,7 +231,7 @@ type Scan<
                         ? never
                         : Scan<
                             NewRestOfSource,
-                            [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber}`>]
+                            [...Tokens, Token<"numberliteral", `${RemoveUselessNegations<LastMinuses>}${ExtractedNumber}`>]
                           >
                     : never
             : ExtractNumber<Source, DecimalDigit> extends [
@@ -223,9 +242,10 @@ type Scan<
                     ? never
                     : Scan<
                         NewRestOfSource,
-                        [...Tokens, Token<"numberliteral", `${LastMinuses}${ExtractedNumber}`>]
+                        [...Tokens, Token<"numberliteral", `${RemoveUselessNegations<LastMinuses>}${ExtractedNumber}`>]
                       >
                 : never
+        // readonly #lexmap = new Map(...)
         : Character extends "-"
         ? Scan<RestOfSource, Tokens, `${LastMinuses}-`>
         : LastMinuses extends `-${string}` // At least one minus
@@ -290,7 +310,7 @@ type ExtractString<
 > = Source extends ""
     ? never
     : Source extends `${infer Character}${infer RestOfSource}`
-    ? LastChar extends "\\"
+    ? LastChar extends "\\" // Escaped anyways, so we continue disregarding if the character is a quote to stop at
         ? ExtractString<RestOfSource, QuoteToStopAt, StringType, Character, `${ResultingString}${Character}`>
         : Character extends QuoteToStopAt
         ? [RestOfSource, `${QuoteToStopAt}${ResultingString}${QuoteToStopAt}`]
@@ -300,15 +320,15 @@ type ExtractString<
 type ExtractNumber<
     Source extends string,
     AllowedDigits extends string,
-    ExpectingDot extends boolean = true,
-    ExpectingE extends boolean = true,
+    ExpectingDot extends boolean = true, // Use two flags to keep track of state
+    ExpectingE extends boolean = true,   // Allows us to do everything in one type
     LastChar extends string = "",
     ResultingNumber extends string = "",
 > = Source extends `${infer Next}${infer RestOfSource}`
     ? Next extends AllowedDigits | "_"
         ? Next extends "_"
             ? LastChar extends "e" | "."
-                ? never
+                ? never // Numeric separators not allowed after 'e' or '.'
                 : ExtractNumber<
                       RestOfSource,
                       AllowedDigits,
@@ -321,13 +341,13 @@ type ExtractNumber<
         : Next extends "."
         ? ExpectingDot extends false
             ? never
-            : LastChar extends "_"
+            : LastChar extends "_" // Numeric separators not allowed before 'e' or '.'
             ? never
             : ExtractNumber<RestOfSource, AllowedDigits, false, ExpectingE, Next, `${ResultingNumber}.`>
         : Next extends "e"
         ? ExpectingE extends false
             ? never
-            : LastChar extends "_"
+            : LastChar extends "_" // Numeric separators not allowed before 'e' or '.'
             ? never
             : ExtractNumber<RestOfSource, AllowedDigits, true, false, Next, `${ResultingNumber}e`>
         : [Source, ResultingNumber]
@@ -335,7 +355,7 @@ type ExtractNumber<
 
 type ExtractIdentifier<Source extends string, Start extends string> = Start extends "r" | "s"
     ? Source extends `${infer MaybeQuote}${infer RestOfSource}`
-        ? MaybeQuote extends "'" | '"'
+        ? MaybeQuote extends "'" | '"' // This is a special string literal
             ? ExtractString<RestOfSource, MaybeQuote, Start extends "r" ? "regexstringliteral" : "sourcestringliteral"> extends [
                 infer NewSource extends string,
                 infer ExtractedString extends string,
@@ -354,24 +374,9 @@ type ExtractIdentifierBody<
     ? IsIdentifierBody<Character> extends true
         ? ExtractIdentifierBody<RestOfSource, Start, `${ResultingBody}${Character}`>
         : `${Start}${ResultingBody}` extends keyof ScannerKeywords
-        ? [Source, Token<ScannerKeywords[`${Start}${ResultingBody}`]>]
+        ? [Source, Token<ScannerKeywords[`${Start}${ResultingBody}`], `${Start}${ResultingBody}`>]
         : [Source, Token<"identifier", `${Start}${ResultingBody}`>]
     : [Source, Token<"identifier", `${Start}${ResultingBody}`>];
-
-type IsDigit<Character extends string> = Character extends DecimalDigit ? true : false;
-
-type IsIdentifierStart<Character extends string> = Character extends LowercaseAlphabet | UppercaseAlphabet | "_" | "$"
-    ? true
-    : false;
-
-type IsIdentifierBody<Character extends string> = Character extends
-    | LowercaseAlphabet
-    | UppercaseAlphabet
-    | DecimalDigit
-    | "_"
-    | "$"
-    ? true
-    : false;
 
 // Actual parsing shit
 
@@ -385,19 +390,19 @@ type ParseExpression<Tokens extends Token[]> = Tokens extends [
     infer First extends Token,
     ...infer RestOfTokens extends Token[]
 ]
-    ? First["type"] extends "leftbracket"
+    ? First["type"] extends "leftbracket" // Start of object
         ? ParseObject<RestOfTokens> extends [
               infer NewRestOfTokens extends Token[],
               infer Parsed extends Expr,
           ]
-            ? ParsePostmodWrapIntoArray<NewRestOfTokens, Parsed>
+            ? ParsePostmodFinisher<NewRestOfTokens, Parsed> // Apply array modifiers
             : never
-        : First["type"] extends "leftbrace"
+        : First["type"] extends "leftbrace" // Start of tuple
             ? ParseTuple<RestOfTokens> extends [
                   infer NewRestOfTokens extends Token[],
                   infer Parsed extends Expr,
               ]
-                ? ParsePostmodWrapIntoArray<NewRestOfTokens, Parsed>
+                ? ParsePostmodFinisher<NewRestOfTokens, Parsed> // Apply array modifiers
                 : never
             : ParsePostmod<Tokens>
     : never;
@@ -407,7 +412,7 @@ type ParseObject<Tokens extends Token[], Props extends PropExpr<string | RegExp,
         infer First extends Token,
         ...infer RestOfTokens extends Token[],
     ]
-        ? First["type"] extends "rightbracket"
+        ? First["type"] extends "rightbracket" // End of object
             ? [RestOfTokens, ObjectExpr<Props>]
             : ParseObjectProp<Tokens> extends [
                   infer NewTokens extends Token[],
@@ -423,7 +428,7 @@ type ParseObjectProp<Tokens extends Token[]> =
         infer Colon extends Token,
         ...infer RestOfTokens extends Token[],
     ]
-        ? Colon["type"] extends "questionmark"
+        ? Colon["type"] extends "questionmark" // This is an ptional property
             ? RestOfTokens extends [
                   infer Colon extends Token,
                   ...infer RestOfTokens extends Token[]
@@ -489,7 +494,7 @@ type ParseTuple<Tokens extends Token[], Elements extends GroupingExpr<Expr[]>[] 
         infer First extends Token,
         ...infer RestOfTokens extends Token[],
     ]
-        ? First["type"] extends "rightbrace"
+        ? First["type"] extends "rightbrace" // End of tuple
             ? [RestOfTokens, TupleExpr<Elements>]
             : ParseTupleElement<Tokens> extends [
                   infer NewRestOfTokens extends Token[],
@@ -504,7 +509,7 @@ type ParseTupleElement<Tokens extends Token[], Element extends Expr[] = []> =
         infer First extends Token,
         ...infer RestOfTokens extends Token[],
     ]
-        ? First["type"] extends "rightbrace"
+        ? First["type"] extends "rightbrace" // Should probably stop if we hit a right brace
             ? Element extends []
                 ? never
                 : [Tokens, Element]
@@ -524,10 +529,10 @@ type ParsePostmod<Tokens extends Token[]> = ParsePrimary<Tokens> extends [
     infer NewTokens extends Token[],
     infer Parsed extends Expr,
 ]
-    ? ParsePostmodWrapIntoArray<NewTokens, Parsed>
+    ? ParsePostmodFinisher<NewTokens, Parsed>
     : never;
 
-type ParsePostmodWrapIntoArray<Tokens extends Token[], Parsed extends Expr> = Tokens extends [
+type ParsePostmodFinisher<Tokens extends Token[], Parsed extends Expr> = Tokens extends [
     infer First extends Token,
     ...infer RestOfTokens extends Token[],
 ]
@@ -536,9 +541,9 @@ type ParsePostmodWrapIntoArray<Tokens extends Token[], Parsed extends Expr> = To
               infer Second extends Token,
               ...infer RestOfTokens extends Token[],
           ]
-            ? Second["type"] extends "rightbrace"
-                ? ParsePostmodWrapIntoArray<RestOfTokens, ArrayExpr<Parsed>>
-                : never
+            ? Second["type"] extends "rightbrace" // Check if it's immediately followed up by a right brace
+                ? ParsePostmodFinisher<RestOfTokens, ArrayExpr<Parsed>>
+                : [Tokens, Parsed] // If it isn't, it might be a tuple so we return it as is
             : never
         : [Tokens, Parsed]
     : [Tokens, Parsed];
@@ -589,7 +594,7 @@ type ParseCallArgs<Tokens extends Token[], Args = {}> =
         infer Colon extends Token,
         ...infer RestOfTokens extends Token[],
     ]
-        ? Ident["type"] extends "rightparen"
+        ? Ident["type"] extends "rightparen" // infer O used to collapse result
             ? [[Colon, ...RestOfTokens], Args extends infer O ? { [K in keyof O]: O[K] } : never]
             : Ident["type"] extends "identifier"
                 ? Colon["type"] extends "colon"
@@ -669,6 +674,55 @@ type TupleExpr<Elements extends GroupingExpr<Expr[]>[]> = {
     elements: Elements;
 };
 
+// Actual generating shit
+
+type IdentifierMap = {
+    bigint: bigint;
+    boolean: boolean;
+    function: (...args: any[]) => any;
+    max: string | number;
+    min: string | number;
+    null: null;
+    number: number;
+    range: number;
+    regex: string;
+    string: string;
+    symbol: symbol;
+    undefined: undefined;
+} & { [key: string]: unknown };
+
+type Generate<Expression extends Expr> =
+    Expression extends GroupingExpr<infer E>
+        ? UnionToIntersection<{
+              [K in keyof E]: Generate<E[K]>;
+          }[keyof E & `${bigint}`]>
+        : Expression extends ArrayExpr<infer E>
+            ? Generate<E>[]
+            : Expression extends LiteralExpr<infer V>
+                ? V
+                : Expression extends TupleExpr<infer E>
+                    ? {
+                          [K in keyof E]: Generate<E[K]>;
+                      }
+                    : Expression extends ObjectExpr<infer Props>
+                        ? {
+                              [K in Extract<Props[number], PropExpr<any, any, false>>["name"] as K extends RegExp ? string : K]: K extends RegExp
+                                  ? Generate<Extract<Props[number], PropExpr<RegExp, any, any>>["value"]>
+                                  : Generate<Extract<Props[number], PropExpr<K, any, any>>["value"]>
+                          } & {
+                              [K in Extract<Props[number], PropExpr<any, any, true>>["name"]]?: Generate<Extract<Props[number], PropExpr<K, any, any>>["value"]>;
+                          } extends infer O ? { [K in keyof O]: O[K] } : never
+                        : Expression extends CallExpr<infer I, infer _> // Args not needed yet
+                            ? IdentifierMap[I]
+                            : Expression extends PropExpr<any, infer V, any>
+                                ? Generate<V>
+                                : never;
+
+// The holy grail
+
+//@ts-ignore Type instantiation is excessively deep and possibly infinite. ts(2589)
+type Eval<S extends string> = Generate<Parse<Scan<S>>>;
+
 // Debugging
 
 type OnlyTokenTypes<T> = { [K in keyof T]: T[K] extends Token<infer Type> ? Type : T[K] };
@@ -696,3 +750,27 @@ type T10 = Parse<Scan<`number range(min: 100, max: 100)`>>;
 type T11 = Parse<Scan<`[0, 0][]`>>;
 
 type T12 = Parse<Scan<`{ r".+": { nested: string min(length: 5); }; false?: number; "foo": 0; bar: "hello"; 0x42: true; }`>>;
+
+type T20 = Generate<Parse<Scan<`{
+    type: string;
+    lhs: {
+        type: "CONSTANT";
+        value: number;
+    };
+    rhs: {
+        type: "CONSTANT";
+        value: number;
+    };
+}`>>>;
+
+type T30 = Eval<`{
+    type: string;
+    lhs: {
+        type: "CONSTANT";
+        value: number;
+    };
+    rhs: {
+        type: "CONSTANT";
+        value: number;
+    };
+}`>;
