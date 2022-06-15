@@ -1,8 +1,3 @@
-// I'm sad GitHub doesn't count .d.ts files as TypeScript
-// I understand the premise and reasoning behind it, but...
-// I can't help but feel that I am missing out on at least
-// a thousand lines of .d.ts with this project
-
 // Utility types
 
 type UnknownArray = ReadonlyArray<unknown>;
@@ -391,16 +386,103 @@ type ParseExpression<Tokens extends Token[]> = Tokens extends [
     ...infer RestOfTokens extends Token[]
 ]
     ? First["type"] extends "leftbracket"
-        ? 0
+        ? ParseObject<RestOfTokens> extends [
+              infer NewRestOfTokens extends Token[],
+              infer Parsed extends Expr,
+          ]
+            ? ParsePostmodWrapIntoArray<NewRestOfTokens, Parsed>
+            : never
         : First["type"] extends "leftbrace"
             ? ParseTuple<RestOfTokens> extends [
                   infer NewRestOfTokens extends Token[],
-                  infer Tuple extends Expr,
+                  infer Parsed extends Expr,
               ]
-                ? ParsePostmodWrapIntoArray<NewRestOfTokens, Tuple>
+                ? ParsePostmodWrapIntoArray<NewRestOfTokens, Parsed>
                 : never
             : ParsePostmod<Tokens>
     : never;
+
+type ParseObject<Tokens extends Token[], Props extends PropExpr<string | RegExp, GroupingExpr<Expr[]>, boolean>[] = []> =
+    Tokens extends [
+        infer First extends Token,
+        ...infer RestOfTokens extends Token[],
+    ]
+        ? First["type"] extends "rightbracket"
+            ? [RestOfTokens, ObjectExpr<Props>]
+            : ParseObjectProp<Tokens> extends [
+                  infer NewTokens extends Token[],
+                  infer ParsedProp extends PropExpr<string | RegExp, GroupingExpr<Expr[]>, boolean>,
+              ]
+                ? ParseObject<NewTokens, [...Props, ParsedProp]>
+                : never
+        : never
+
+type ParseObjectProp<Tokens extends Token[]> =
+    Tokens extends [
+        infer PropName extends Token,
+        infer Colon extends Token,
+        ...infer RestOfTokens extends Token[],
+    ]
+        ? Colon["type"] extends "questionmark"
+            ? RestOfTokens extends [
+                  infer Colon extends Token,
+                  ...infer RestOfTokens extends Token[]
+              ]
+                ? Colon["type"] extends "colon"
+                    ? ParsePropValue<RestOfTokens> extends [
+                        infer NewTokens extends Token[],
+                        infer ParsedValue extends Expr[],
+                    ]
+                        ? PropName["type"] extends "numberliteral"
+                            ? [NewTokens, PropExpr<`${TryRealNumberLiteral<PropName["lexeme"]>}`, GroupingExpr<ParsedValue>, true>]
+                            : PropName["type"] extends "stringliteral" | "sourcestringliteral"
+                                ? [NewTokens, PropExpr<PropName["lexeme"] extends `${"s" | ""}${"\"" | "'"}${infer S}${"\"" | "'"}` ? S : never, GroupingExpr<ParsedValue>, true>]
+                                : PropName["type"] extends "true" | "false"
+                                    ? [NewTokens, PropExpr<PropName["type"], GroupingExpr<ParsedValue>, true>]
+                                    : PropName["type"] extends "regexstringliteral"
+                                        ? [NewTokens, PropExpr<RegExp, GroupingExpr<ParsedValue>, true>]
+                                        : PropName["type"] extends "identifier"
+                                            ? [NewTokens, PropExpr<PropName["lexeme"], GroupingExpr<ParsedValue>, true>]
+                                            : never
+                        : never
+                    : never
+                : never
+            : Colon["type"] extends "colon"
+                ? ParsePropValue<RestOfTokens> extends [
+                      infer NewTokens extends Token[],
+                      infer ParsedValue extends Expr[],
+                  ]
+                    ? PropName["type"] extends "numberliteral"
+                        ? [NewTokens, PropExpr<`${TryRealNumberLiteral<PropName["lexeme"]>}`, GroupingExpr<ParsedValue>, false>]
+                        : PropName["type"] extends "stringliteral" | "sourcestringliteral"
+                            ? [NewTokens, PropExpr<PropName["lexeme"] extends `${"s" | ""}${"\"" | "'"}${infer S}${"\"" | "'"}` ? S : never, GroupingExpr<ParsedValue>, false>]
+                            : PropName["type"] extends "true" | "false"
+                                ? [NewTokens, PropExpr<PropName["type"], GroupingExpr<ParsedValue>, false>]
+                                : PropName["type"] extends "regexstringliteral"
+                                    ? [NewTokens, PropExpr<RegExp, GroupingExpr<ParsedValue>, false>]
+                                    : PropName["type"] extends "identifier"
+                                        ? [NewTokens, PropExpr<PropName["lexeme"], GroupingExpr<ParsedValue>, false>]
+                                        : never
+                    : never
+                : never
+        : never
+
+type ParsePropValue<Tokens extends Token[], Value extends Expr[] = []> =
+    Tokens extends [
+        infer First extends Token,
+        ...infer RestOfTokens extends Token[],
+    ]
+        ? First["type"] extends "semicolon"
+            ? Value extends []
+                ? never
+                : [RestOfTokens, Value]
+            : ParseExpression<Tokens> extends [
+                  infer NewRestOfTokens extends Token[],
+                  infer Parsed extends Expr
+              ]
+                ? ParsePropValue<NewRestOfTokens, [...Value, Parsed]>
+                : never
+        : never;
 
 type ParseTuple<Tokens extends Token[], Elements extends GroupingExpr<Expr[]>[] = []> =
     Tokens extends [
@@ -415,7 +497,7 @@ type ParseTuple<Tokens extends Token[], Elements extends GroupingExpr<Expr[]>[] 
               ]
                 ? ParseTuple<NewRestOfTokens, [...Elements, GroupingExpr<Element>]>
                 : never
-    : never;
+        : never;
 
 type ParseTupleElement<Tokens extends Token[], Element extends Expr[] = []> =
     Tokens extends [
@@ -612,3 +694,5 @@ type T04 = Scan<`{
 type T10 = Parse<Scan<`number range(min: 100, max: 100)`>>;
 
 type T11 = Parse<Scan<`[0, 0][]`>>;
+
+type T12 = Parse<Scan<`{ r".+": { nested: string min(length: 5); }; false?: number; "foo": 0; bar: "hello"; 0x42: true; }`>>;
