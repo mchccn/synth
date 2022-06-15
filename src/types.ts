@@ -6,7 +6,11 @@ import type { Synthesized } from "./core/synthesize.js";
 export type TryNodeType<T> = T extends ValidationNode<infer U> ? U : T;
 export type GetNodeType<T> = T extends ValidationNode<infer U> ? U : never;
 
-export type GetSynthesized<T> = T extends Synthesized<infer N> ? GetNodeType<N> : never;
+export type GetSynthesized<T> = T extends Synthesized<infer N, infer R>
+    ? [R] extends [never]
+        ? GetNodeType<N>
+        : R
+    : never;
 
 export type Narrow<T> =
     | (T extends infer U ? U : never)

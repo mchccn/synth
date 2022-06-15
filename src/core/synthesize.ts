@@ -7,7 +7,9 @@ import { Generator } from "./tools/generator.js";
 import { Linter } from "./tools/linter.js";
 import { Resolver } from "./tools/resolver.js";
 
-export class Synthesized<Matcher extends ValidationNode = ValidationNode> {
+export class Synthesized<Matcher extends ValidationNode = ValidationNode, RawTypeGiven = never> {
+    #_: RawTypeGiven = null!;
+
     readonly #module: Matcher;
 
     constructor(module: Matcher) {
