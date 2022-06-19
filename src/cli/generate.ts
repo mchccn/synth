@@ -1,8 +1,8 @@
 import { readFile } from "fs/promises";
 import { sep } from "path";
-import { registeredProviders, registeredValidators } from "src/plugin/registered.js";
 import * as builtinProviders from "../core/providers/index.js";
 import * as builtinValidators from "../core/validators/index.js";
+import { registeredProviders, registeredValidators } from "../plugin/registered.js";
 import { compile } from "./compile.js";
 import { pkg } from "./package.js";
 

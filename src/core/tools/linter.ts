@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import stripAnsi from "strip-ansi";
 import { registeredGenerators } from "../..//plugin/registered.js";
 import {
     ArrayExpr,
@@ -62,13 +63,6 @@ export class Linter implements ExprVisitor<Lint[]> {
         const errors = Linter.filter(lints, LintSeverity.Error).length;
         const fatals = Linter.filter(lints, LintSeverity.Fatal).length;
 
-        // The message without chalk styling so the bound doesn't get fucked... need a better way to do this instead of copying the message manually
-        const bland = `${lints.length} lint${lints.length !== 1 ? "s" : ""} total, ${hints} hint${
-            hints !== 1 ? "s" : ""
-        }, ${warnings} warning${warnings !== 1 ? "s" : ""}, ${errors} error${
-            errors !== 1 ? "s" : ""
-        }, ${fatals} fatal mistake${fatals !== 1 ? "s" : ""}`;
-
         const original = `${chalk[lints.length ? "cyan" : "greenBright"](
             `${lints.length} lint${lints.length !== 1 ? "s" : ""} total`,
         )}, ${chalk[hints ? "blueBright" : "gray"](`${hints} hint${hints !== 1 ? "s" : ""}`)}, ${chalk[
@@ -77,7 +71,9 @@ export class Linter implements ExprVisitor<Lint[]> {
             `${errors} error${errors !== 1 ? "s" : ""}`,
         )}, ${chalk[fatals ? "red" : "gray"](`${fatals} fatal mistake${fatals !== 1 ? "s" : ""}`)}`;
 
-        return bound ? `${original} ${chalk.dim("─".repeat(Math.max(bound - bland.length, 0)))}` : original;
+        return bound
+            ? `${original} ${chalk.dim("─".repeat(Math.max(bound - stripAnsi(original).length, 0)))}`
+            : original;
     }
 
     static display(

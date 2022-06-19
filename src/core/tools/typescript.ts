@@ -1,4 +1,4 @@
-import { registeredGenerators } from "src/plugin/registered.js";
+import { registeredGenerators } from "../../plugin/registered.js";
 import {
     ArrayExpr,
     CallExpr,
