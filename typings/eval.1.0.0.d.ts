@@ -671,9 +671,15 @@ type IdentifierMap = {
 
 type Generate<Expression extends Expr> =
     Expression extends GroupingExpr<infer E>
-        ? UnionToIntersection<{
+        ? boolean extends {
               [K in keyof E]: Generate<E[K]>;
-          }[keyof E & `${bigint}`]>
+          }[keyof E & `${bigint}`]
+            ? UnionToIntersection<Exclude<{
+                [K in keyof E]: Generate<E[K]>;
+              }[keyof E & `${bigint}`], boolean>> & boolean
+            : UnionToIntersection<{
+                [K in keyof E]: Generate<E[K]>;
+              }[keyof E & `${bigint}`]>
         : Expression extends ArrayExpr<infer E>
             ? Generate<E>[]
             : Expression extends LiteralExpr<infer V>
